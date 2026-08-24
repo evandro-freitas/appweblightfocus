@@ -128,9 +128,7 @@ function Index() {
                   </p>
                   {filter === "todas" && (
                     <TaskForm
-                      onSubmit={(input, steps) =>
-                        steps ? handleAddWithSteps(input, steps) : handleAdd(input)
-                      }
+                      onSubmit={handleAdd}
                       trigger={
                         <Button variant="outline" className="mt-4 gap-2">
                           <Plus className="h-4 w-4" />
