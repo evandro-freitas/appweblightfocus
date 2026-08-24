@@ -50,28 +50,10 @@ function Index() {
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "concluida"), [tasks]);
 
   function handleAdd(input: TaskInput, steps?: string[]) {
-    addTask(input);
+    const id = addTask(input);
     if (steps && steps.length > 0) {
-      // addTask cria a tarefa no topo; precisamos do id recém-criado.
-      // Como o estado atualiza imediatamente, o primeiro item é a nova tarefa.
-      const nextTasks = [input as unknown as Task, ...tasks];
-      // Não temos o id aqui; por isso usamos um pequeno truque: criamos manualmente.
-      // Mas addTask já cria o id dentro do reducer. Vamos usar updateTask no item recém-adicionado.
+      setSteps(id, steps);
     }
-  }
-
-  function handleAddWithSteps(input: TaskInput, steps: string[]) {
-    // Criamos a tarefa manualmente para ter o id antes de definir os passos.
-    const id = crypto.randomUUID();
-    const task: Task = {
-      ...input,
-      id,
-      createdAt: new Date().toISOString(),
-      completedAt: input.status === "concluida" ? new Date().toISOString() : null,
-      steps: [],
-    };
-    addTask(task as unknown as TaskInput);
-    setSteps(id, steps);
   }
 
   function handleUpdate(id: string, input: TaskInput) {
