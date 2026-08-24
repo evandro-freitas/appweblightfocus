@@ -104,12 +104,9 @@ function mirrorSave(task: Task) {
 
 function mirrorDelete(id: string) {
   if (!supabaseExternal) return;
-  void supabaseExternal
-    .from("tasks")
-    .delete()
-    .eq("id", id)
-    .then(() => {})
-    .catch((e) => console.error("Supabase sync:", e));
+  void (async () => {
+    await supabaseExternal.from("tasks").delete().eq("id", id);
+  })().catch((e: unknown) => console.error("Supabase sync:", e));
 }
 
 async function loadFromDb(): Promise<Task[] | null> {
