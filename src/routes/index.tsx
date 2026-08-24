@@ -106,11 +106,7 @@ function Index() {
               </TabsList>
             </Tabs>
 
-            <TaskForm
-              onSubmit={(input, steps) =>
-                steps ? handleAddWithSteps(input, steps) : handleAdd(input)
-              }
-            />
+            <TaskForm onSubmit={handleAdd} />
           </div>
 
           <div className="mt-6 space-y-3">
