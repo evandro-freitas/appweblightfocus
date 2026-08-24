@@ -203,6 +203,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "add", task });
     mirrorSave(task);
     toast.success("Tarefa criada com sucesso!");
+    return task.id;
   }, []);
 
   const updateTask = useCallback(
