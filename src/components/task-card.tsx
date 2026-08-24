@@ -112,7 +112,7 @@ export function TaskCard({ task, onToggleComplete, onStart, onDelete, onEdit }: 
                     <li key={step.id} className="flex items-start gap-2 text-sm">
                       <Checkbox
                         checked={step.done}
-                        disabled
+                        onCheckedChange={() => console.log("clicou", step.id)}
                         className="mt-0.5 h-4 w-4"
                         aria-label={step.title}
                       />
