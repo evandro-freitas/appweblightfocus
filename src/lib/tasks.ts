@@ -22,6 +22,7 @@ export interface Task {
   estimatedMinutes: number;
   createdAt: string;
   completedAt: string | null;
+  startedAt?: string | null;
   steps: TaskStep[];
 }
 
@@ -29,6 +30,8 @@ export interface CheckIn {
   energy: Energy;
   mood: Mood;
   availableMinutes: number;
+  /** Prioridades do dia, em texto livre (opcional). */
+  priorities?: string;
 }
 
 export interface TaskInput {
