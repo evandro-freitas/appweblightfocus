@@ -72,7 +72,7 @@ function Index() {
               <Brain className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold tracking-tight">Fokus</h1>
+              <h1 className="font-display text-2xl font-bold tracking-tight">LightFocus</h1>
               <p className="text-xs text-muted-foreground">Uma coisa de cada vez.</p>
             </div>
           </div>
