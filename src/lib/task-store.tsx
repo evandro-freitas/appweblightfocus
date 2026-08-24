@@ -165,7 +165,7 @@ async function loadFromDb(): Promise<Task[] | null> {
 
 interface TasksContextValue {
   tasks: Task[];
-  addTask: (input: TaskInput) => void;
+  addTask: (input: TaskInput) => string;
   updateTask: (id: string, input: TaskInput) => void;
   deleteTask: (id: string) => void;
   toggleComplete: (id: string) => void;
