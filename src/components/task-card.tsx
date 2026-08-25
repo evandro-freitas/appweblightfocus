@@ -1,5 +1,14 @@
-import { useState } from "react";
-import { CheckCircle2, Circle, Clock, MoreHorizontal, Play, Trash2, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  MoreHorizontal,
+  Play,
+  Sparkles,
+  Trash2,
+  Zap,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +28,8 @@ interface TaskCardProps {
   onStart: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
+  onToggleStep: (taskId: string, stepId: string) => void;
+  onDecompose: (task: Task) => Promise<void> | void;
 }
 
 const priorityClasses = {
@@ -27,8 +38,32 @@ const priorityClasses = {
   baixa: "bg-priority-baixa/15 text-priority-baixa border-priority-baixa/20",
 };
 
-export function TaskCard({ task, onToggleComplete, onStart, onDelete, onEdit }: TaskCardProps) {
-  const [expanded, setExpanded] = useState(false);
+export function TaskCard({
+  task,
+  onToggleComplete,
+  onStart,
+  onDelete,
+  onEdit,
+  onToggleStep,
+  onDecompose,
+}: TaskCardProps) {
+  const [expanded, setExpanded] = useState(task.status === "em_andamento");
+  const [isDecomposing, setIsDecomposing] = useState(false);
+
+  // Ao iniciar a tarefa, os passos aparecem automaticamente
+  useEffect(() => {
+    if (task.status === "em_andamento") setExpanded(true);
+  }, [task.status]);
+
+  async function handleDecompose() {
+    setIsDecomposing(true);
+    try {
+      await onDecompose(task);
+      setExpanded(true);
+    } finally {
+      setIsDecomposing(false);
+    }
+  }
   const openSteps = task.steps.filter((s) => !s.done).length;
   const totalSteps = task.steps.length;
   const progress = totalSteps > 0 ? Math.round(((totalSteps - openSteps) / totalSteps) * 100) : 0;
@@ -101,6 +136,15 @@ export function TaskCard({ task, onToggleComplete, onStart, onDelete, onEdit }: 
                     {totalSteps - openSteps}/{totalSteps} passos
                   </span>
                 )}
+                {task.startedAt && task.status !== "concluida" && (
+                  <span className="inline-flex items-center gap-1 text-status-progress">
+                    Iniciada às{" "}
+                    {new Date(task.startedAt).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                )}
               </div>
             </button>
 
@@ -112,7 +156,7 @@ export function TaskCard({ task, onToggleComplete, onStart, onDelete, onEdit }: 
                     <li key={step.id} className="flex items-start gap-2 text-sm">
                       <Checkbox
                         checked={step.done}
-                        onCheckedChange={() => console.log("clicou", step.id)}
+                        onCheckedChange={() => onToggleStep(task.id, step.id)}
                         className="mt-0.5 h-4 w-4"
                         aria-label={step.title}
                       />
@@ -126,6 +170,22 @@ export function TaskCard({ task, onToggleComplete, onStart, onDelete, onEdit }: 
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
+              {task.status !== "concluida" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleDecompose()}
+                  disabled={isDecomposing}
+                  className="h-8 gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {isDecomposing
+                    ? "Decompondo..."
+                    : totalSteps > 0
+                      ? "Refazer passos com IA"
+                      : "Decompor com IA"}
+                </Button>
+              )}
               {task.status !== "concluida" && task.status !== "em_andamento" && (
                 <Button size="sm" onClick={() => onStart(task.id)} className="h-8 gap-1.5">
                   <Play className="h-3.5 w-3.5" />
