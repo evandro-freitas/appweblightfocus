@@ -276,11 +276,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const startTask = useCallback(
     (id: string) => {
       const t = find(id);
-      if (!t) return;
+      if (!t || t.status === "em_andamento") return;
 
+      const startedAt = t.startedAt ?? new Date().toISOString();
       dispatch({ type: "setStatus", id, status: "em_andamento" });
+      mirrorSave({ ...t, status: "em_andamento", startedAt });
 
-      mirrorSave({ ...t, status: "em_andamento" });
+      const hora = new Date(startedAt).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      toast.success(`Começou às ${hora}. Foco em uma coisa só. 💪`);
     },
     [find]
   );
