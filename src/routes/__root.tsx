@@ -80,22 +80,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fokus — Tarefas para quem tem TDAH" },
+      { title: "LightFocus — Tarefas para quem tem TDAH" },
       {
         name: "description",
         content:
-          "Fokus ajuda pessoas com TDAH a priorizar, começar e concluir tarefas com menos fricção e mais clareza.",
+          "LightFocus ajuda pessoas com TDAH a priorizar, começar e concluir tarefas com menos fricção e mais clareza.",
       },
-      { name: "author", content: "Fokus" },
-      { property: "og:title", content: "Fokus — Tarefas para quem tem TDAH" },
+      { name: "author", content: "LightFocus" },
+      { property: "og:title", content: "LightFocus — Tarefas para quem tem TDAH" },
       {
         property: "og:description",
         content:
-          "Fokus ajuda pessoas com TDAH a priorizar, começar e concluir tarefas com menos fricção e mais clareza.",
+          "LightFocus ajuda pessoas com TDAH a priorizar, começar e concluir tarefas com menos fricção e mais clareza.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@fokus" },
+      { name: "twitter:site", content: "@lightfocus" },
     ],
     links: [
       {
