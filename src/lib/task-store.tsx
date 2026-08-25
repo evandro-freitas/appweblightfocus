@@ -48,6 +48,12 @@ function reducer(state: Task[], action: Action): Task[] {
           ? {
               ...t,
               status: action.status,
+              startedAt:
+                action.status === "em_andamento"
+                  ? (t.startedAt ?? new Date().toISOString())
+                  : action.status === "pendente"
+                    ? null
+                    : (t.startedAt ?? null),
               completedAt:
                 action.status === "concluida"
                   ? new Date().toISOString()
