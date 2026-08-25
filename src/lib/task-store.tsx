@@ -164,21 +164,21 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
 
+    const db = supabaseExternal;
+    if (!db) return;
+
     void (async () => {
       try {
-        const { data: rows } = await supabaseExternal
-          ?.from("tasks")
+        const { data: rows } = await db
+          .from("tasks")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (!rows || rows.length === 0) return;
 
-        const ids = rows.map((r) => r.id);
+        const ids = rows.map((r) => r.id as string);
 
-        const { data: stepRows } = await supabaseExternal
-          ?.from("task_steps")
-          .select("*")
-          .in("task_id", ids);
+        const { data: stepRows } = await db.from("task_steps").select("*").in("task_id", ids);
 
         const mapped: Task[] = rows.map((r) => ({
           id: r.id,
