@@ -114,7 +114,7 @@ export function buildRecommendMessages(checkIn: CheckIn, tasks: Task[]) {
       role: "system" as const,
       content:
         "Você é um coach de foco para pessoas com TDAH. Sua missão é escolher UMA tarefa para a pessoa fazer agora, reduzindo a paralisia de decisão. " +
-        "Considere: energia atual, humor, tempo disponível, prioridade e o princípio de que começar pequeno vence a procrastinação. " +
+        "Considere: energia atual, humor, tempo disponível, as prioridades declaradas do dia, prioridade da tarefa e o princípio de que começar pequeno vence a procrastinação. " +
         "Se a pessoa está ansiosa ou sobrecarregada, prefira tarefas leves e curtas. Responda APENAS com JSON válido, sem markdown: " +
         '{"task_id": string, "reason": string (1-2 frases em pt-BR, tom acolhedor e direto), "first_step": string (micro-passo de até 5 minutos, em pt-BR)}.',
     },
@@ -125,6 +125,7 @@ export function buildRecommendMessages(checkIn: CheckIn, tasks: Task[]) {
           energia: checkIn.energy,
           humor: checkIn.mood,
           minutos_disponiveis: checkIn.availableMinutes,
+          prioridades_do_dia: checkIn.priorities ?? "",
         },
         tarefas_abertas: open,
       }),

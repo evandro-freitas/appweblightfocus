@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Brain, CheckCircle2, ListTodo, Moon, Plus, Sparkles, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskCard } from "@/components/task-card";
 import { TaskForm } from "@/components/task-form";
 import { TaskStats } from "@/components/task-stats";
+import { CheckInDialog } from "@/components/checkin-dialog";
+import { RecommendationPanel } from "@/components/recommendation-panel";
+import { RemindersDialog } from "@/components/reminders-dialog";
+import { decomposeTask } from "@/lib/ai.functions";
 import { useTheme } from "@/lib/theme";
 import { useTasks } from "@/lib/task-store";
 import type { Status, Task, TaskInput } from "@/lib/tasks";
@@ -37,7 +42,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, setSteps } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps } =
+    useTasks();
+  const decompose = useServerFn(decomposeTask);
   const [filter, setFilter] = useState<Filter>("todas");
   const [editingId, setEditingId] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
@@ -61,6 +68,17 @@ function Index() {
     setEditingId(null);
   }
 
+  async function handleDecompose(task: Task) {
+    const result = await decompose({
+      data: {
+        title: task.title,
+        description: task.description,
+        estimatedMinutes: task.estimatedMinutes,
+      },
+    });
+    setSteps(task.id, result.steps);
+  }
+
   const editingTask = editingId ? tasks.find((t) => t.id === editingId) ?? null : null;
 
   return (
@@ -76,12 +94,18 @@ function Index() {
               <p className="text-xs text-muted-foreground">Uma coisa de cada vez.</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-1">
+            <CheckInDialog />
+            <RemindersDialog />
+            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+          </div>
         </header>
 
         <TaskStats tasks={tasks} />
+
+        <RecommendationPanel />
 
         <section className="mt-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -156,6 +180,8 @@ function Index() {
                     onStart={startTask}
                     onDelete={deleteTask}
                     onEdit={() => setEditingId(task.id)}
+                    onToggleStep={toggleStep}
+                    onDecompose={handleDecompose}
                   />
                 ),
               )
