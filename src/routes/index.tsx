@@ -22,17 +22,17 @@ type Filter = "todas" | Status;
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Fokus — Tarefas para quem tem TDAH" },
+      { title: "LightFocus — Tarefas para quem tem TDAH" },
       {
         name: "description",
         content:
-          "Veja suas tarefas, filtre por status e adicione novas atividades no Fokus.",
+          "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
       },
-      { property: "og:title", content: "Fokus — Tarefas para quem tem TDAH" },
+      { property: "og:title", content: "LightFocus — Tarefas para quem tem TDAH" },
       {
         property: "og:description",
         content:
-          "Veja suas tarefas, filtre por status e adicione novas atividades no Fokus.",
+          "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

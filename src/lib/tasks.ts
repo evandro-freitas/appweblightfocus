@@ -1,4 +1,4 @@
-// Tipos e rótulos do domínio de tarefas (Fokus)
+// Tipos e rótulos do domínio de tarefas (LightFocus)
 
 export type Priority = "baixa" | "media" | "alta";
 export type Status = "pendente" | "em_andamento" | "concluida";

@@ -61,7 +61,7 @@ export function CheckInDialog({ trigger }: Props) {
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Responda rapidinho — com isso a Fokus escolhe uma tarefa que combina com o seu momento.
+            Responda rapidinho — com isso a LightFocus escolhe uma tarefa que combina com o seu momento.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
