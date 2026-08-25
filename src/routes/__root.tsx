@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { TasksProvider } from "../lib/task-store";
+import { CheckInProvider } from "../lib/checkin-store";
+import { RemindersProvider } from "../lib/reminders";
 import { ThemeProvider } from "../lib/theme";
 
 function NotFoundComponent() {
@@ -132,8 +134,12 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TasksProvider>
+        <CheckInProvider>
+        <RemindersProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+        </RemindersProvider>
+        </CheckInProvider>
         </TasksProvider>
         <Toaster position="bottom-right" richColors />
       </ThemeProvider>
