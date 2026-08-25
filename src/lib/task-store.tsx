@@ -48,6 +48,12 @@ function reducer(state: Task[], action: Action): Task[] {
           ? {
               ...t,
               status: action.status,
+              startedAt:
+                action.status === "em_andamento"
+                  ? (t.startedAt ?? new Date().toISOString())
+                  : action.status === "pendente"
+                    ? null
+                    : (t.startedAt ?? null),
               completedAt:
                 action.status === "concluida"
                   ? new Date().toISOString()
@@ -164,21 +170,21 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
 
+    const db = supabaseExternal;
+    if (!db) return;
+
     void (async () => {
       try {
-        const { data: rows } = await supabaseExternal
-          ?.from("tasks")
+        const { data: rows } = await db
+          .from("tasks")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (!rows || rows.length === 0) return;
 
-        const ids = rows.map((r) => r.id);
+        const ids = rows.map((r) => r.id as string);
 
-        const { data: stepRows } = await supabaseExternal
-          ?.from("task_steps")
-          .select("*")
-          .in("task_id", ids);
+        const { data: stepRows } = await db.from("task_steps").select("*").in("task_id", ids);
 
         const mapped: Task[] = rows.map((r) => ({
           id: r.id,
@@ -270,11 +276,17 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const startTask = useCallback(
     (id: string) => {
       const t = find(id);
-      if (!t) return;
+      if (!t || t.status === "em_andamento") return;
 
+      const startedAt = t.startedAt ?? new Date().toISOString();
       dispatch({ type: "setStatus", id, status: "em_andamento" });
+      mirrorSave({ ...t, status: "em_andamento", startedAt });
 
-      mirrorSave({ ...t, status: "em_andamento" });
+      const hora = new Date(startedAt).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      toast.success(`Começou às ${hora}. Foco em uma coisa só. 💪`);
     },
     [find]
   );

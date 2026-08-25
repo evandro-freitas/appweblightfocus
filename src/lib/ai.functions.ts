@@ -16,6 +16,7 @@ const checkInSchema = z.object({
   energy: z.enum(["baixa", "media", "alta"]),
   mood: z.enum(["otimo", "bem", "neutro", "ansioso", "sobrecarregado"]),
   availableMinutes: z.number().min(5).max(480),
+  priorities: z.string().max(1000).optional(),
 });
 
 const taskSnapshotSchema = z.object({

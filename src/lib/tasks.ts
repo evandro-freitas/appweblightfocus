@@ -31,7 +31,7 @@ export interface CheckIn {
   mood: Mood;
   availableMinutes: number;
   /** Prioridades do dia, em texto livre (opcional). */
-  priorities?: string;
+  priorities?: string | undefined;
 }
 
 export interface TaskInput {
