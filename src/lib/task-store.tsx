@@ -10,7 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { seedTasks } from "./mock-tasks";
-import { isSupabaseConfigured, supabaseExternal } from "./supabase-external";
+import { getSupabaseExternal } from "./supabase-external";
 import { newId, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
 
 // ---------------------------------------------------------------------------
@@ -121,27 +121,26 @@ function stepsToRows(t: Task) {
 }
 
 function mirrorSave(task: Task) {
-  if (!supabaseExternal) return;
-
   void (async () => {
-    await supabaseExternal.from("tasks").upsert(taskToRow(task));
-    await supabaseExternal
-      .from("task_steps")
-      .delete()
-      .eq("task_id", task.id);
+    const db = await getSupabaseExternal();
+    if (!db) return;
+
+    await db.from("tasks").upsert(taskToRow(task));
+    await db.from("task_steps").delete().eq("task_id", task.id);
 
     const rows = stepsToRows(task);
     if (rows.length > 0) {
-      await supabaseExternal.from("task_steps").insert(rows);
+      await db.from("task_steps").insert(rows);
     }
   })().catch((e) => console.error("Supabase sync:", e));
 }
 
 function mirrorDelete(id: string) {
-  if (!supabaseExternal) return;
-
   void (async () => {
-    await supabaseExternal.from("tasks").delete().eq("id", id);
+    const db = await getSupabaseExternal();
+    if (!db) return;
+
+    await db.from("tasks").delete().eq("id", id);
   })().catch((e) => console.error("Supabase sync:", e));
 }
 
