@@ -10,7 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { seedTasks } from "./mock-tasks";
-import { isSupabaseConfigured, supabaseExternal } from "./supabase-external";
+import { getSupabaseExternal } from "./supabase-external";
 import { newId, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
 
 // ---------------------------------------------------------------------------
@@ -121,27 +121,26 @@ function stepsToRows(t: Task) {
 }
 
 function mirrorSave(task: Task) {
-  if (!supabaseExternal) return;
-
   void (async () => {
-    await supabaseExternal.from("tasks").upsert(taskToRow(task));
-    await supabaseExternal
-      .from("task_steps")
-      .delete()
-      .eq("task_id", task.id);
+    const db = await getSupabaseExternal();
+    if (!db) return;
+
+    await db.from("tasks").upsert(taskToRow(task));
+    await db.from("task_steps").delete().eq("task_id", task.id);
 
     const rows = stepsToRows(task);
     if (rows.length > 0) {
-      await supabaseExternal.from("task_steps").insert(rows);
+      await db.from("task_steps").insert(rows);
     }
   })().catch((e) => console.error("Supabase sync:", e));
 }
 
 function mirrorDelete(id: string) {
-  if (!supabaseExternal) return;
-
   void (async () => {
-    await supabaseExternal.from("tasks").delete().eq("id", id);
+    const db = await getSupabaseExternal();
+    if (!db) return;
+
+    await db.from("tasks").delete().eq("id", id);
   })().catch((e) => console.error("Supabase sync:", e));
 }
 
@@ -166,15 +165,13 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const [tasks, dispatch] = useReducer(reducer, [], () => seedTasks());
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-
     let cancelled = false;
-
-    const db = supabaseExternal;
-    if (!db) return;
 
     void (async () => {
       try {
+        const db = await getSupabaseExternal();
+        if (!db || cancelled) return;
+
         const { data: rows } = await db
           .from("tasks")
           .select("*")
@@ -182,27 +179,30 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
         if (!rows || rows.length === 0) return;
 
-        const ids = rows.map((r) => r.id as string);
+        const taskRows = rows as Record<string, any>[];
+        const ids = taskRows.map((r) => r["id"] as string);
 
         const { data: stepRows } = await db.from("task_steps").select("*").in("task_id", ids);
+        const steps = (stepRows ?? []) as Record<string, any>[];
 
-        const mapped: Task[] = rows.map((r) => ({
-          id: r.id,
-          title: r.title,
-          description: r.description ?? "",
-          priority: r.priority,
-          status: r.status,
-          energy: r.energy,
-          estimatedMinutes: r.estimated_minutes ?? 15,
-          createdAt: r.created_at,
-          completedAt: r.completed_at ?? null,
-          steps: (stepRows ?? [])
-            .filter((s) => s.task_id === r.id)
+        const mapped: Task[] = taskRows.map((r) => ({
+          id: r["id"],
+          title: r["title"],
+          description: r["description"] ?? "",
+          priority: r["priority"],
+          status: r["status"],
+          energy: r["energy"],
+          estimatedMinutes: r["estimated_minutes"] ?? 15,
+          createdAt: r["created_at"],
+          startedAt: r["started_at"] ?? null,
+          completedAt: r["completed_at"] ?? null,
+          steps: steps
+            .filter((s) => s["task_id"] === r["id"])
             .map((s) => ({
-              id: s.id,
-              title: s.title,
-              done: s.done,
-              position: s.position ?? 0,
+              id: s["id"],
+              title: s["title"],
+              done: s["done"],
+              position: s["position"] ?? 0,
             })),
         }));
 
