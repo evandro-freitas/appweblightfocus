@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "../lib/auth";
 import { TasksProvider } from "../lib/task-store";
 import { CheckInProvider } from "../lib/checkin-store";
 import { RemindersProvider } from "../lib/reminders";
@@ -133,6 +134,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <AuthProvider>
         <TasksProvider>
         <CheckInProvider>
         <RemindersProvider>
@@ -141,6 +143,7 @@ function RootComponent() {
         </RemindersProvider>
         </CheckInProvider>
         </TasksProvider>
+        </AuthProvider>
         <Toaster position="bottom-right" richColors />
       </ThemeProvider>
     </QueryClientProvider>

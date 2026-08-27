@@ -9,7 +9,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-import { seedTasks } from "./mock-tasks";
+import { useAuth } from "./auth";
 import { getSupabaseExternal } from "./supabase-external";
 import { newId, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
 
@@ -96,9 +96,10 @@ function reducer(state: Task[], action: Action): Task[] {
 // Supabase Sync
 // ---------------------------------------------------------------------------
 
-function taskToRow(t: Task) {
+function taskToRow(t: Task, userId: string | null) {
   return {
     id: t.id,
+    user_id: userId,
     title: t.title,
     description: t.description,
     priority: t.priority,
@@ -126,7 +127,15 @@ function mirrorSave(task: Task) {
     const db = await getSupabaseExternal();
     if (!db) return;
 
-    await db.from("tasks").upsert(taskToRow(task));
+    const { data: auth } = await db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+
+    const { error } = await db.from("tasks").upsert(taskToRow(task, userId));
+    if (error) {
+      console.error("Supabase sync:", error);
+      toast.error(`Não salvou no banco: ${error.message}`);
+      return;
+    }
     await db.from("task_steps").delete().eq("task_id", task.id);
 
     const rows = stepsToRows(task);
@@ -163,22 +172,38 @@ interface TasksContextValue {
 const TasksContext = createContext<TasksContextValue | null>(null);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const [tasks, dispatch] = useReducer(reducer, [], () => seedTasks());
+  const { user, configured } = useAuth();
+  const [tasks, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
     let cancelled = false;
+
+    if (configured && !user) {
+      dispatch({ type: "hydrate", tasks: [] });
+      return;
+    }
 
     void (async () => {
       try {
         const db = await getSupabaseExternal();
         if (!db || cancelled) return;
 
-        const { data: rows } = await db
+        const { data: rows, error } = await db
           .from("tasks")
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (!rows || rows.length === 0) return;
+        if (error) {
+          console.error("Supabase load:", error);
+          toast.error(`Não carregou do banco: ${error.message}`);
+          return;
+        }
+
+
+        if (!rows || rows.length === 0) {
+          if (!cancelled) dispatch({ type: "hydrate", tasks: [] });
+          return;
+        }
 
         const taskRows = rows as Record<string, any>[];
         const ids = taskRows.map((r) => r["id"] as string);
@@ -218,7 +243,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.id, configured]);
 
   const find = useCallback(
     (id: string) => tasks.find((t) => t.id === id),
