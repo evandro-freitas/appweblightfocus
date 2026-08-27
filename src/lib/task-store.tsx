@@ -106,6 +106,7 @@ function taskToRow(t: Task) {
     energy: t.energy,
     estimated_minutes: t.estimatedMinutes,
     created_at: t.createdAt,
+    started_at: t.startedAt ?? null,
     completed_at: t.completedAt,
   };
 }
