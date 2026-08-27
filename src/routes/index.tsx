@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, CheckCircle2, ListTodo, Moon, Plus, Sparkles, Sun } from "lucide-react";
+import { Brain, CheckCircle2, ListTodo, LogOut, Moon, Plus, Sparkles, Sun } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { CheckInDialog } from "@/components/checkin-dialog";
 import { RecommendationPanel } from "@/components/recommendation-panel";
 import { RemindersDialog } from "@/components/reminders-dialog";
 import { decomposeTask } from "@/lib/ai.functions";
+import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useTasks } from "@/lib/task-store";
 import type { Status, Task, TaskInput } from "@/lib/tasks";
@@ -38,6 +40,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  ssr: false,
   component: Index,
 });
 
@@ -48,6 +51,12 @@ function Index() {
   const [filter, setFilter] = useState<Filter>("todas");
   const [editingId, setEditingId] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
+  const { user, loading, configured, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (configured && !loading && !user) void navigate({ to: "/auth" });
+  }, [configured, loading, user, navigate]);
 
   const filteredTasks = useMemo(() => {
     if (filter === "todas") return tasks;
@@ -81,6 +90,14 @@ function Index() {
 
   const editingTask = editingId ? tasks.find((t) => t.id === editingId) ?? null : null;
 
+  if (configured && (loading || !user)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Carregando…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
@@ -100,6 +117,16 @@ function Index() {
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => void signOut().then(() => navigate({ to: "/auth" }))}
+                aria-label="Sair da conta"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            )}
           </div>
         </header>
 
