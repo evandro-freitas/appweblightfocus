@@ -178,15 +178,27 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
+    if (configured && !user) {
+      dispatch({ type: "hydrate", tasks: [] });
+      return;
+    }
+
     void (async () => {
       try {
         const db = await getSupabaseExternal();
         if (!db || cancelled) return;
 
-        const { data: rows } = await db
+        const { data: rows, error } = await db
           .from("tasks")
           .select("*")
           .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Supabase load:", error);
+          toast.error(`Não carregou do banco: ${error.message}`);
+          return;
+        }
+
 
         if (!rows || rows.length === 0) {
           if (!cancelled) dispatch({ type: "hydrate", tasks: [] });
