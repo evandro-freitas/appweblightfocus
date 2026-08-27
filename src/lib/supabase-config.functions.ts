@@ -8,10 +8,12 @@ import { createServerFn } from "@tanstack/react-start";
  */
 export const getSupabaseConfig = createServerFn({ method: "GET" }).handler(
   async () => {
-    const url = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"] ?? null;
+    const url =
+      process.env["EXTERNAL_SUPABASE_URL"] ??
+      process.env["VITE_SUPABASE_URL"] ??
+      null;
     const anonKey =
-      process.env["SUPABASE_ANON_KEY"] ??
-      process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+      process.env["EXTERNAL_SUPABASE_ANON_KEY"] ??
       process.env["VITE_SUPABASE_ANON_KEY"] ??
       null;
 
