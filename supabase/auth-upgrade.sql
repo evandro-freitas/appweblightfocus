@@ -53,8 +53,12 @@ with check (
 alter table public.check_ins
   add column if not exists user_id uuid references auth.users(id) on delete cascade;
 
+create index if not exists check_ins_user_created_at_idx
+  on public.check_ins(user_id, created_at desc);
+
 revoke all on public.check_ins from anon;
 grant select, insert, update, delete on public.check_ins to authenticated;
+grant all on public.check_ins to service_role;
 
 drop policy if exists "check_ins acesso publico" on public.check_ins;
 drop policy if exists "check_ins do usuario" on public.check_ins;
