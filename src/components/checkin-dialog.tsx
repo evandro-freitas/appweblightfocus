@@ -29,13 +29,23 @@ interface Props {
 export function CheckInDialog({ trigger }: Props) {
   const { checkIn, saveCheckIn } = useCheckIn();
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<CheckIn>(
     checkIn ?? { energy: "media", mood: "neutro", availableMinutes: 30, priorities: "" },
   );
 
-  function handleSave() {
-    saveCheckIn(form);
-    setOpen(false);
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      await saveCheckIn(form);
+      setOpen(false);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível salvar o check-in.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -128,8 +138,11 @@ export function CheckInDialog({ trigger }: Props) {
           </div>
 
           <div className="flex justify-end pt-2">
-            <Button onClick={handleSave}>Salvar check-in</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Salvando…" : "Salvar check-in"}
+            </Button>
           </div>
+          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
         </div>
       </DialogContent>
     </Dialog>
