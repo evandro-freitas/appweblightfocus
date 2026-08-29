@@ -33,16 +33,65 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, resendConfirmation } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"entrar" | "criar">("entrar");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<
+    { kind: "ok" | "erro"; text: string; canResend?: boolean } | null
+  >(null);
+  const [pendingEmail, setPendingEmail] = useState("");
+
+  // Lê o retorno do link de confirmação de e-mail (sucesso ou link expirado).
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    const errorCode = hash.get("error_code") ?? query.get("error_code");
+
+    if (errorCode) {
+      setMode("entrar");
+      setNotice({
+        kind: "erro",
+        text:
+          errorCode === "otp_expired"
+            ? "Esse link de confirmação expirou ou já foi usado. Podemos enviar um novo."
+            : hash.get("error_description") ?? "Não foi possível confirmar o e-mail.",
+        canResend: true,
+      });
+      window.history.replaceState(null, "", "/auth");
+      return;
+    }
+
+    if (query.get("confirmado") === "1" || hash.get("type") === "signup") {
+      setMode("entrar");
+      setNotice({ kind: "ok", text: "E-mail confirmado! Entre com seu e-mail e senha." });
+      window.history.replaceState(null, "", "/auth");
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && user) void navigate({ to: "/" });
   }, [loading, user, navigate]);
+
+  async function handleResend() {
+    const target = (email.trim() || pendingEmail).trim();
+    if (!target) {
+      toast.error("Informe seu e-mail para reenviar a confirmação.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resendConfirmation(target);
+      setNotice({ kind: "ok", text: `Novo link de confirmação enviado para ${target}.` });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível reenviar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,8 +104,13 @@ function AuthPage() {
       } else {
         const { needsConfirmation } = await signUp(email.trim(), password);
         if (needsConfirmation) {
-          toast.success("Conta criada! Confirme o e-mail para entrar.");
+          setPendingEmail(email.trim());
           setMode("entrar");
+          setNotice({
+            kind: "ok",
+            text: `Enviamos um link de confirmação para ${email.trim()}. Ao confirmar, você volta para esta tela de login.`,
+            canResend: true,
+          });
         } else {
           toast.success("Conta criada. Vamos começar! ✨");
           void navigate({ to: "/" });
@@ -100,6 +154,29 @@ function AuthPage() {
             </Tabs>
           </CardHeader>
           <CardContent>
+            {notice && (
+              <div
+                className={`mb-4 rounded-lg border p-3 text-sm ${
+                  notice.kind === "ok"
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-destructive/30 bg-destructive/10 text-foreground"
+                }`}
+              >
+                <p>{notice.text}</p>
+                {notice.canResend && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={busy}
+                    onClick={() => void handleResend()}
+                  >
+                    Reenviar e-mail de confirmação
+                  </Button>
+                )}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
