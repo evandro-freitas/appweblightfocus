@@ -172,16 +172,19 @@ interface TasksContextValue {
 const TasksContext = createContext<TasksContextValue | null>(null);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const { user, configured } = useAuth();
+  const { user, configured, loading } = useAuth();
   const [tasks, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (configured && !user) {
+    // Espera a sessão resolver: sem usuário logado o banco recusa a leitura.
+    if (loading) return;
+    if (!user) {
       dispatch({ type: "hydrate", tasks: [] });
       return;
     }
+
 
     void (async () => {
       try {
