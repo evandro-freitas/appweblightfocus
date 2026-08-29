@@ -104,8 +104,13 @@ function AuthPage() {
       } else {
         const { needsConfirmation } = await signUp(email.trim(), password);
         if (needsConfirmation) {
-          toast.success("Conta criada! Confirme o e-mail para entrar.");
+          setPendingEmail(email.trim());
           setMode("entrar");
+          setNotice({
+            kind: "ok",
+            text: `Enviamos um link de confirmação para ${email.trim()}. Ao confirmar, você volta para esta tela de login.`,
+            canResend: true,
+          });
         } else {
           toast.success("Conta criada. Vamos começar! ✨");
           void navigate({ to: "/" });
