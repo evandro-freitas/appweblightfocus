@@ -1,5 +1,5 @@
 -- ============================================================
--- Fokus / LightFocus — schema para o Supabase
+-- LightFocus — schema para o Supabase
 -- Rode este SQL no SQL Editor do seu projeto Supabase.
 -- ============================================================
 

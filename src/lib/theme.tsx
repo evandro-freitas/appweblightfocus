@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 type Theme = "dark" | "light";
 
-const STORAGE_KEY = "fokus-theme";
+const STORAGE_KEY = "lightfocus-theme";
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
   theme: "dark",

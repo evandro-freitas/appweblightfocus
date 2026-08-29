@@ -10,7 +10,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 
-const STORAGE_KEY = "fokus.reminders";
+const STORAGE_KEY = "lightfocus.reminders";
 
 export interface RemindersSettings {
   enabled: boolean;
@@ -70,10 +70,10 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
       if (fired.current.has(key)) return;
       fired.current.add(key);
 
-      const message = "Hora de revisar suas tarefas pendentes no Fokus.";
-      toast.info("Lembrete do Fokus", { description: message, duration: 10000 });
+      const message = "Hora de revisar suas tarefas pendentes no LightFocus.";
+      toast.info("Lembrete do LightFocus", { description: message, duration: 10000 });
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        new Notification("Fokus", { body: message });
+        new Notification("LightFocus", { body: message });
       }
     };
 
