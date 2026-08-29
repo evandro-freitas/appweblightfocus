@@ -11,12 +11,24 @@ import { useTasks } from "@/lib/task-store";
 import { ENERGY_LABELS, MOOD_LABELS, type Task } from "@/lib/tasks";
 import type { Recommendation } from "@/lib/ai-logic";
 
+const REC_KEY = "lightfocus.recommendation";
+
+interface StoredRec {
+  signature: string;
+  rec: Recommendation | null;
+}
+
 export function RecommendationPanel() {
-  const { checkIn, isToday } = useCheckIn();
+  const { checkIn, checkedInAt, isToday } = useCheckIn();
   const { tasks, startTask } = useTasks();
   const recommend = useServerFn(recommendTask);
   const [rec, setRec] = useState<Recommendation | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Cada check-in tem sua própria recomendação salva; ela só muda se eu pedir.
+  const signature = checkIn
+    ? `${checkedInAt ?? ""}|${checkIn.energy}|${checkIn.mood}|${checkIn.availableMinutes}`
+    : "";
 
   const fetchRec = useCallback(async () => {
     if (!checkIn) return;
@@ -34,18 +46,36 @@ export function RecommendationPanel() {
         },
       });
       setRec(result);
+      try {
+        localStorage.setItem(REC_KEY, JSON.stringify({ signature, rec: result } satisfies StoredRec));
+      } catch {
+        /* localStorage indisponível */
+      }
     } catch {
       setRec(null);
     } finally {
       setLoading(false);
     }
-  }, [checkIn, recommend, tasks]);
+  }, [checkIn, recommend, tasks, signature]);
 
-  // Recomendação automática assim que existe um check-in
+  // Reaproveita a recomendação salva; só consulta a IA quando ainda não existe uma.
   useEffect(() => {
-    if (checkIn) void fetchRec();
+    if (!checkIn) return;
+    let cached: StoredRec | null = null;
+    try {
+      const raw = localStorage.getItem(REC_KEY);
+      cached = raw ? (JSON.parse(raw) as StoredRec) : null;
+    } catch {
+      cached = null;
+    }
+    if (cached && cached.signature === signature) {
+      setRec(cached.rec);
+      return;
+    }
+    void fetchRec();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkIn]);
+  }, [signature]);
+
 
   if (!checkIn) {
     return (
