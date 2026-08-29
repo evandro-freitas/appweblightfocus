@@ -129,6 +129,7 @@ function mirrorSave(task: Task) {
 
     const { data: auth } = await db.auth.getUser();
     const userId = auth.user?.id ?? null;
+    if (!userId) return; // sem sessão o banco recusa a escrita
 
     const { error } = await db.from("tasks").upsert(taskToRow(task, userId));
     if (error) {
@@ -172,16 +173,19 @@ interface TasksContextValue {
 const TasksContext = createContext<TasksContextValue | null>(null);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const { user, configured } = useAuth();
+  const { user, loading } = useAuth();
   const [tasks, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (configured && !user) {
+    // Espera a sessão resolver: sem usuário logado o banco recusa a leitura.
+    if (loading) return;
+    if (!user) {
       dispatch({ type: "hydrate", tasks: [] });
       return;
     }
+
 
     void (async () => {
       try {
@@ -243,7 +247,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, configured]);
+  }, [user?.id, loading]);
 
   const find = useCallback(
     (id: string) => tasks.find((t) => t.id === id),
