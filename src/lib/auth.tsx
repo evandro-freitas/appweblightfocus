@@ -77,10 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await db.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/auth?confirmado=1` },
     });
     if (error) throw new Error(error.message);
     return { needsConfirmation: !data.session };
+  }, []);
+
+  const resendConfirmation = useCallback(async (email: string) => {
+    const db = await getSupabaseExternal();
+    if (!db) throw new Error("Banco de dados não configurado.");
+    const { error } = await db.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth?confirmado=1` },
+    });
+    if (error) throw new Error(error.message);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -90,8 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ configured, loading, user, signIn, signUp, signOut }),
-    [configured, loading, user, signIn, signUp, signOut],
+    () => ({ configured, loading, user, signIn, signUp, resendConfirmation, signOut }),
+    [configured, loading, user, signIn, signUp, resendConfirmation, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
