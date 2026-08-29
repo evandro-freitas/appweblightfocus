@@ -13,7 +13,7 @@ import { useAuth } from "./auth";
 import { getSupabaseExternal } from "./supabase-external";
 import type { CheckIn } from "./tasks";
 
-const STORAGE_KEY = "fokus.checkin";
+const STORAGE_KEY = "lightfocus.checkin";
 
 interface StoredCheckIn extends CheckIn {
   date: string; // YYYY-MM-DD
