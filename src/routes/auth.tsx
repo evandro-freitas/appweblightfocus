@@ -154,6 +154,29 @@ function AuthPage() {
             </Tabs>
           </CardHeader>
           <CardContent>
+            {notice && (
+              <div
+                className={`mb-4 rounded-lg border p-3 text-sm ${
+                  notice.kind === "ok"
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-destructive/30 bg-destructive/10 text-foreground"
+                }`}
+              >
+                <p>{notice.text}</p>
+                {notice.canResend && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={busy}
+                    onClick={() => void handleResend()}
+                  >
+                    Reenviar e-mail de confirmação
+                  </Button>
+                )}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
