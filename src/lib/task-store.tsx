@@ -173,7 +173,7 @@ interface TasksContextValue {
 const TasksContext = createContext<TasksContextValue | null>(null);
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const { user, configured, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [tasks, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
