@@ -129,6 +129,7 @@ function mirrorSave(task: Task) {
 
     const { data: auth } = await db.auth.getUser();
     const userId = auth.user?.id ?? null;
+    if (!userId) return; // sem sessão o banco recusa a escrita
 
     const { error } = await db.from("tasks").upsert(taskToRow(task, userId));
     if (error) {
@@ -246,7 +247,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, configured]);
+  }, [user?.id, loading]);
 
   const find = useCallback(
     (id: string) => tasks.find((t) => t.id === id),
