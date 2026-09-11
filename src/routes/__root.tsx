@@ -11,12 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AuthProvider } from "../lib/auth";
-import { TasksProvider } from "../lib/task-store";
-import { CheckInProvider } from "../lib/checkin-store";
-import { RemindersProvider } from "../lib/reminders";
-import { ThemeProvider } from "../lib/theme";
+import { reportLovableError } from "@/lib/lovable-error-reporting";
+import { AuthProvider } from "@/lib/auth";
+import { TasksProvider } from "@/lib/task-store";
+import { CheckInProvider } from "@/lib/checkin-store";
+import { RemindersProvider } from "@/lib/reminders";
+import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
