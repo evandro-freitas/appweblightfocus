@@ -30,7 +30,7 @@ interface TaskCardProps {
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
   onToggleStep: (taskId: string, stepId: string) => void;
-  onDecompose: (task: Task) => Promise<void> | void;
+  onDecompose: (task: Task, mode: "replace" | "continue") => Promise<void> | void;
   onFocus: (task: Task) => void;
 }
 
@@ -58,10 +58,10 @@ export function TaskCard({
     if (task.status === "em_andamento") setExpanded(true);
   }, [task.status]);
 
-  async function handleDecompose() {
+  async function handleDecompose(mode: "replace" | "continue") {
     setIsDecomposing(true);
     try {
-      await onDecompose(task);
+      await onDecompose(task, mode);
       setExpanded(true);
     } finally {
       setIsDecomposing(false);
@@ -193,7 +193,7 @@ export function TaskCard({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => void handleDecompose()}
+                  onClick={() => void handleDecompose("replace")}
                   disabled={isDecomposing}
                   className="h-8 gap-1.5"
                 >
@@ -203,6 +203,18 @@ export function TaskCard({
                     : totalSteps > 0
                       ? "Refazer passos com IA"
                       : "Decompor com IA"}
+                </Button>
+              )}
+              {task.status !== "concluida" && totalSteps > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleDecompose("continue")}
+                  disabled={isDecomposing}
+                  className="h-8 gap-1.5"
+                >
+                  <Repeat className="h-3.5 w-3.5" />
+                  Continuar passos
                 </Button>
               )}
               {task.status !== "concluida" && task.status !== "em_andamento" && (

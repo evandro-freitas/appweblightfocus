@@ -172,6 +172,7 @@ interface TasksContextValue {
   startTask: (id: string) => void;
   toggleStep: (taskId: string, stepId: string) => void;
   setSteps: (taskId: string, stepTitles: string[]) => void;
+  appendSteps: (taskId: string, stepTitles: string[]) => void;
 }
 
 const TasksContext = createContext<TasksContextValue | null>(null);
@@ -392,6 +393,27 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     [find]
   );
 
+  const appendSteps = useCallback(
+    (taskId: string, stepTitles: string[]) => {
+      const t = find(taskId);
+      if (!t || stepTitles.length === 0) return;
+
+      const steps: TaskStep[] = [
+        ...t.steps,
+        ...stepTitles.map((title, index) => ({
+          id: newId(),
+          title,
+          done: false,
+          position: t.steps.length + index,
+        })),
+      ];
+
+      dispatch({ type: "setSteps", taskId, steps });
+      mirrorSave({ ...t, steps });
+    },
+    [find],
+  );
+
   const value = useMemo(
     () => ({
       tasks,
@@ -402,8 +424,9 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       startTask,
       toggleStep,
       setSteps,
+      appendSteps,
     }),
-    [tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps]
+    [tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps, appendSteps]
   );
 
   return (

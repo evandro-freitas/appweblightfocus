@@ -48,7 +48,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps } =
+  const { tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps, appendSteps } =
     useTasks();
   const decompose = useServerFn(decomposeTask);
   const [filter, setFilter] = useState<Filter>("todas");
@@ -81,15 +81,21 @@ function Index() {
     setEditingId(null);
   }
 
-  async function handleDecompose(task: Task) {
+  async function handleDecompose(task: Task, mode: "replace" | "continue") {
     const result = await decompose({
       data: {
         title: task.title,
         description: task.description,
         estimatedMinutes: task.estimatedMinutes,
+        mode,
+        existingSteps: task.steps.map((step) => step.title),
       },
     });
-    setSteps(task.id, result.steps);
+    if (mode === "continue") {
+      appendSteps(task.id, result.steps);
+    } else {
+      setSteps(task.id, result.steps);
+    }
   }
 
   const editingTask = editingId ? tasks.find((t) => t.id === editingId) ?? null : null;

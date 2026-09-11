@@ -5,6 +5,7 @@ import {
   buildDecomposeMessages,
   buildRecommendMessages,
   heuristicRecommend,
+  heuristicContinuationSteps,
   heuristicSteps,
   parseJsonFromAi,
   type Recommendation,
@@ -70,21 +71,39 @@ export const decomposeTask = createServerFn({ method: "POST" })
         title: z.string().min(1),
         description: z.string(),
         estimatedMinutes: z.number(),
+        mode: z.enum(["replace", "continue"]).default("replace"),
+        existingSteps: z.array(z.string()).max(30).default([]),
       })
       .parse(data),
   )
   .handler(async ({ data }): Promise<{ steps: string[] }> => {
     const raw = await callAiGateway(buildDecomposeMessages(data));
-    if (!raw) return { steps: heuristicSteps(data.title) };
+    if (!raw) {
+      return {
+        steps: data.mode === "continue"
+          ? heuristicContinuationSteps(data.title)
+          : heuristicSteps(data.title),
+      };
+    }
 
     const parsed = parseJsonFromAi<{ steps?: unknown }>(raw);
     if (!parsed?.steps || !Array.isArray(parsed.steps)) {
-      return { steps: heuristicSteps(data.title) };
+      return {
+        steps: data.mode === "continue"
+          ? heuristicContinuationSteps(data.title)
+          : heuristicSteps(data.title),
+      };
     }
 
     const steps = parsed.steps
       .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
       .slice(0, 6);
 
-    return { steps: steps.length > 0 ? steps : heuristicSteps(data.title) };
+    return {
+      steps: steps.length > 0
+        ? steps
+        : data.mode === "continue"
+          ? heuristicContinuationSteps(data.title)
+          : heuristicSteps(data.title),
+    };
   });

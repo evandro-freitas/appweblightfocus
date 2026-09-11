@@ -93,6 +93,14 @@ export function heuristicSteps(title: string): string[] {
   ];
 }
 
+export function heuristicContinuationSteps(title: string): string[] {
+  return [
+    `Retomar "${title}" exatamente de onde parou (2 min)`,
+    `Executar a próxima parte concreta de "${title}" (10 min)`,
+    `Revisar o avanço e registrar o próximo passo de "${title}"`,
+  ];
+}
+
 // ---------------------------------------------------------------------------
 // Prompts para o gateway de IA
 // ---------------------------------------------------------------------------
@@ -133,13 +141,22 @@ export function buildRecommendMessages(checkIn: CheckIn, tasks: Task[]) {
   ];
 }
 
-export function buildDecomposeMessages(task: { title: string; description: string; estimatedMinutes: number }) {
+export function buildDecomposeMessages(task: {
+  title: string;
+  description: string;
+  estimatedMinutes: number;
+  mode?: "replace" | "continue";
+  existingSteps?: string[];
+}) {
+  const continuing = task.mode === "continue";
   return [
     {
       role: "system" as const,
       content:
         "Você ajuda pessoas com TDAH a decompor tarefas em micro-passos acionáveis. " +
-        "Gere de 3 a 6 passos: o primeiro deve ser ridículamente fácil (2-5 min) para destravar o início; cada passo deve começar com um verbo de ação e caber em até 15 minutos. " +
+        (continuing
+          ? "A tarefa já tem passos registrados. Gere de 2 a 4 próximos passos, continuando exatamente depois do último passo existente. Não repita, não recomece e não descreva passos já concluídos. O primeiro novo passo deve ser uma ação concreta que avance o trabalho. "
+          : "Gere de 3 a 6 passos: o primeiro deve ser ridículamente fácil (2-5 min) para destravar o início; cada passo deve começar com um verbo de ação e caber em até 15 minutos. ") +
         "Responda APENAS com JSON válido, sem markdown: {" + '"steps": string[]' + "} (passos em pt-BR).",
     },
     {
@@ -148,6 +165,8 @@ export function buildDecomposeMessages(task: { title: string; description: strin
         tarefa: task.title,
         descricao: task.description,
         minutos_estimados: task.estimatedMinutes,
+        modo: continuing ? "continuar" : "refazer",
+        passos_existentes: task.existingSteps ?? [],
       }),
     },
   ];
