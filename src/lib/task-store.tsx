@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "./auth";
 import { getSupabaseExternal } from "./supabase-external";
-import { newId, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
+import { EMPTY_RECURRENCE, newId, nextRecurrenceDate, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -109,6 +109,10 @@ function taskToRow(t: Task, userId: string | null) {
     created_at: t.createdAt,
     started_at: t.startedAt ?? null,
     completed_at: t.completedAt,
+    due_at: t.dueAt,
+    recurrence_frequency: t.recurrence.frequency,
+    recurrence_weekdays: t.recurrence.weekdays,
+    recurrence_day_of_month: t.recurrence.dayOfMonth,
   };
 }
 
@@ -226,6 +230,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           createdAt: r["created_at"],
           startedAt: r["started_at"] ?? null,
           completedAt: r["completed_at"] ?? null,
+          dueAt: r["due_at"] ?? null,
+          recurrence: {
+            frequency: r["recurrence_frequency"] ?? "none",
+            weekdays: (r["recurrence_weekdays"] ?? []) as number[],
+            dayOfMonth: r["recurrence_day_of_month"] ?? null,
+          },
           steps: steps
             .filter((s) => s["task_id"] === r["id"])
             .map((s) => ({
@@ -260,6 +270,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       id: newId(),
       createdAt: new Date().toISOString(),
       completedAt: null,
+      dueAt: nextRecurrenceDate(input.recurrence ?? EMPTY_RECURRENCE),
+      recurrence: input.recurrence ?? EMPTY_RECURRENCE,
       steps: [],
     };
 
@@ -299,6 +311,27 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         completedAt:
           next === "concluida" ? new Date().toISOString() : null,
       });
+
+      if (next === "concluida" && t.recurrence.frequency !== "none") {
+        const recurringTask: Task = {
+          ...t,
+          id: newId(),
+          status: "pendente",
+          createdAt: new Date().toISOString(),
+          completedAt: null,
+          startedAt: null,
+          dueAt: nextRecurrenceDate(t.recurrence),
+          steps: t.steps.map((step, position) => ({
+            ...step,
+            id: newId(),
+            done: false,
+            position,
+          })),
+        };
+        dispatch({ type: "add", task: recurringTask });
+        mirrorSave(recurringTask);
+        toast.success("Próxima ocorrência criada. Sua rotina continua no lugar.");
+      }
     },
     [find]
   );

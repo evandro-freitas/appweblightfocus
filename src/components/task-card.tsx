@@ -5,6 +5,7 @@ import {
   Clock,
   MoreHorizontal,
   Play,
+  Repeat,
   Sparkles,
   Trash2,
   Zap,
@@ -20,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ENERGY_LABELS, PRIORITY_LABELS, type Task } from "@/lib/tasks";
+import { ENERGY_LABELS, PRIORITY_LABELS, recurrenceLabel, type Task } from "@/lib/tasks";
 
 interface TaskCardProps {
   task: Task;
@@ -145,6 +146,17 @@ export function TaskCard({
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
+                  </span>
+                )}
+                {recurrenceLabel(task.recurrence) && (
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <Repeat className="h-3.5 w-3.5" />
+                    {recurrenceLabel(task.recurrence)}
+                  </span>
+                )}
+                {task.dueAt && (
+                  <span className="text-muted-foreground">
+                    Próxima: {new Date(task.dueAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                   </span>
                 )}
               </div>

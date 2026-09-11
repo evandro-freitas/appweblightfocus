@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Sparkles } from "lucide-react";
+import { CalendarClock, Plus, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { decomposeTask } from "@/lib/ai.functions";
 import { useServerFn } from "@tanstack/react-start";
-import type { Task, TaskInput } from "@/lib/tasks";
+import { EMPTY_RECURRENCE, WEEKDAY_LABELS, type Task, type TaskInput } from "@/lib/tasks";
 
 const emptyInput: TaskInput = {
   title: "",
@@ -25,6 +25,7 @@ const emptyInput: TaskInput = {
   status: "pendente",
   energy: "media",
   estimatedMinutes: 25,
+  recurrence: EMPTY_RECURRENCE,
 };
 
 interface TaskFormProps {
@@ -36,15 +37,19 @@ interface TaskFormProps {
 
 export function TaskForm({ onSubmit, editingTask, onCancel, trigger }: TaskFormProps) {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState<TaskInput>(editingTask ? { ...editingTask } : emptyInput);
+  const [input, setInput] = useState<TaskInput>(
+    editingTask ? { ...editingTask, recurrence: editingTask.recurrence ?? EMPTY_RECURRENCE } : emptyInput,
+  );
   const [isDecomposing, setIsDecomposing] = useState(false);
   const decompose = useServerFn(decomposeTask);
 
   const isEditing = Boolean(editingTask);
+  const recurrence = input.recurrence;
+  const recurrenceReady = recurrence.frequency !== "weekly" || recurrence.weekdays.length > 0;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.title.trim()) return;
+    if (!input.title.trim() || !recurrenceReady) return;
     onSubmit(input);
     if (!isEditing) {
       setInput(emptyInput);
@@ -147,6 +152,94 @@ export function TaskForm({ onSubmit, editingTask, onCancel, trigger }: TaskFormP
         />
       </div>
 
+      <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-3">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-4 w-4 text-primary" />
+          <div>
+            <Label htmlFor="recurrence">Repetição</Label>
+            <p className="text-xs text-muted-foreground">Para rotinas que voltam sem recriar a tarefa.</p>
+          </div>
+        </div>
+        <Select
+          value={recurrence.frequency}
+          onValueChange={(value) =>
+            setInput((current) => ({
+              ...current,
+              recurrence: {
+                ...current.recurrence,
+                frequency: value as TaskInput["recurrence"]["frequency"],
+                weekdays: value === "weekly" ? current.recurrence.weekdays : [],
+                dayOfMonth: value === "monthly" ? current.recurrence.dayOfMonth ?? 1 : null,
+              },
+            }))
+          }
+        >
+          <SelectTrigger id="recurrence"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Não se repete</SelectItem>
+            <SelectItem value="weekly">Toda semana</SelectItem>
+            <SelectItem value="monthly">Todo mês</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {recurrence.frequency === "weekly" && (
+          <div className="space-y-2">
+            <Label>Dias da semana</Label>
+            <div className="grid grid-cols-7 gap-1">
+              {WEEKDAY_LABELS.map((day, index) => {
+                const selected = recurrence.weekdays.includes(index);
+                return (
+                  <Button
+                    key={day}
+                    type="button"
+                    size="sm"
+                    variant={selected ? "default" : "outline"}
+                    className="px-1 text-xs"
+                    onClick={() =>
+                      setInput((current) => ({
+                        ...current,
+                        recurrence: {
+                          ...current.recurrence,
+                          weekdays: selected
+                            ? current.recurrence.weekdays.filter((value) => value !== index)
+                            : [...current.recurrence.weekdays, index].sort(),
+                        },
+                      }))
+                    }
+                  >
+                    {day}
+                  </Button>
+                );
+              })}
+            </div>
+            {!recurrenceReady && <p className="text-xs text-destructive">Escolha pelo menos um dia.</p>}
+          </div>
+        )}
+
+        {recurrence.frequency === "monthly" && (
+          <div className="space-y-2">
+            <Label htmlFor="month-day">Dia do mês</Label>
+            <Input
+              id="month-day"
+              type="number"
+              min={1}
+              max={31}
+              value={recurrence.dayOfMonth ?? 1}
+              onChange={(event) =>
+                setInput((current) => ({
+                  ...current,
+                  recurrence: {
+                    ...current.recurrence,
+                    dayOfMonth: Math.min(31, Math.max(1, Number(event.target.value) || 1)),
+                  },
+                }))
+              }
+            />
+            <p className="text-xs text-muted-foreground">Em meses sem esse dia, usamos o último dia do mês.</p>
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         {isEditing ? (
           <>
@@ -163,13 +256,13 @@ export function TaskForm({ onSubmit, editingTask, onCancel, trigger }: TaskFormP
               type="button"
               variant="outline"
               onClick={handleDecompose}
-              disabled={isDecomposing || !input.title.trim()}
+              disabled={isDecomposing || !input.title.trim() || !recurrenceReady}
               className="w-full gap-1.5 sm:w-auto"
             >
               <Sparkles className="h-4 w-4" />
               {isDecomposing ? "Decompondo..." : "Decompor com IA"}
             </Button>
-            <Button type="submit" disabled={!input.title.trim()} className="w-full sm:w-auto">
+            <Button type="submit" disabled={!input.title.trim() || !recurrenceReady} className="w-full sm:w-auto">
               Adicionar tarefa
             </Button>
           </>
