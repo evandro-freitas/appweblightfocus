@@ -25,8 +25,16 @@ const emptyInput: TaskInput = {
   status: "pendente",
   energy: "media",
   estimatedMinutes: 25,
+  dueAt: null,
   recurrence: EMPTY_RECURRENCE,
 };
+
+function toDateTimeLocal(value: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 interface TaskFormProps {
   onSubmit: (input: TaskInput, steps?: string[]) => void;
@@ -150,6 +158,22 @@ export function TaskForm({ onSubmit, editingTask, onCancel, trigger }: TaskFormP
             setInput((i) => ({ ...i, estimatedMinutes: Number(e.target.value) || 5 }))
           }
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="due-at">Quando começar?</Label>
+        <Input
+          id="due-at"
+          type="datetime-local"
+          value={toDateTimeLocal(input.dueAt)}
+          onChange={(event) =>
+            setInput((current) => ({
+              ...current,
+              dueAt: event.target.value ? new Date(event.target.value).toISOString() : null,
+            }))
+          }
+        />
+        <p className="text-xs text-muted-foreground">Você receberá um aviso 15 minutos antes e outro na hora.</p>
       </div>
 
       <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-3">

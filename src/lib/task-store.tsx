@@ -270,7 +270,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       id: newId(),
       createdAt: new Date().toISOString(),
       completedAt: null,
-      dueAt: nextRecurrenceDate(input.recurrence ?? EMPTY_RECURRENCE),
+      dueAt: input.dueAt ?? nextRecurrenceDate(input.recurrence ?? EMPTY_RECURRENCE),
       recurrence: input.recurrence ?? EMPTY_RECURRENCE,
       steps: [],
     };

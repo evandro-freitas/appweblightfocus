@@ -14,6 +14,8 @@ import { CheckInDialog } from "@/components/checkin-dialog";
 import { RecommendationPanel } from "@/components/recommendation-panel";
 import { RemindersDialog } from "@/components/reminders-dialog";
 import { FocusMode } from "@/components/focus-mode";
+import { RewardPanel } from "@/components/reward-panel";
+import { TaskAlerts } from "@/components/task-alerts";
 import { decomposeTask } from "@/lib/ai.functions";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -139,6 +141,9 @@ function Index() {
         </header>
 
         <TaskStats tasks={tasks} />
+
+        <RewardPanel tasks={tasks} />
+        <TaskAlerts />
 
         <RecommendationPanel />
 

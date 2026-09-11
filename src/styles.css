@@ -221,3 +221,25 @@
 .animate-float-in {
   animation: float-in 0.4s ease-out both;
 }
+
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate3d(0, -10px, 0) rotate(0); }
+  100% { opacity: 0; transform: translate3d(var(--confetti-x), 180px, 0) rotate(540deg); }
+}
+
+.confetti {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 7px;
+  height: 12px;
+  border-radius: 2px;
+  animation: confetti-fall 1.3s ease-out forwards;
+}
+
+.confetti-1 { background: var(--color-primary); --confetti-x: -210px; animation-delay: 0.02s; }
+.confetti-2 { background: var(--color-accent); --confetti-x: -130px; animation-delay: 0.08s; }
+.confetti-3 { background: var(--color-status-done); --confetti-x: -60px; animation-delay: 0.04s; }
+.confetti-4 { background: var(--color-priority-alta); --confetti-x: 60px; animation-delay: 0.1s; }
+.confetti-5 { background: var(--color-status-progress); --confetti-x: 130px; animation-delay: 0.06s; }
+.confetti-6 { background: var(--color-accent); --confetti-x: 210px; animation-delay: 0.12s; }

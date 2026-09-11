@@ -50,6 +50,7 @@ export interface TaskInput {
   status: Status;
   energy: Energy;
   estimatedMinutes: number;
+  dueAt: string | null;
   recurrence: TaskRecurrence;
 }
 

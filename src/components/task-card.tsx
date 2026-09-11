@@ -156,7 +156,12 @@ export function TaskCard({
                 )}
                 {task.dueAt && (
                   <span className="text-muted-foreground">
-                    Próxima: {new Date(task.dueAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    {task.recurrence.frequency === "none" ? "Começa" : "Próxima"}: {new Date(task.dueAt).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 )}
               </div>
