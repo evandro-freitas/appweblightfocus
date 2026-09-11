@@ -115,8 +115,8 @@ function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
+    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-background px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto w-full min-w-0 max-w-3xl">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
