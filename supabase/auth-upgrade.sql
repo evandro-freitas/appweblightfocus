@@ -12,6 +12,7 @@ create index if not exists tasks_user_id_idx on public.tasks(user_id);
 
 alter table public.tasks
   add column if not exists due_at timestamptz,
+  add column if not exists recurrence_series_id uuid,
   add column if not exists recurrence_frequency text not null default 'none',
   add column if not exists recurrence_weekdays integer[] not null default '{}',
   add column if not exists recurrence_day_of_month integer;

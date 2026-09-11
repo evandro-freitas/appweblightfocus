@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "./auth";
 import { getSupabaseExternal } from "./supabase-external";
-import { EMPTY_RECURRENCE, newId, nextRecurrenceDate, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
+import { EMPTY_RECURRENCE, newId, nextRecurrenceDate, nextWeeklyDate, type Status, type Task, type TaskInput, type TaskStep } from "./tasks";
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -110,6 +110,7 @@ function taskToRow(t: Task, userId: string | null) {
     started_at: t.startedAt ?? null,
     completed_at: t.completedAt,
     due_at: t.dueAt,
+    recurrence_series_id: t.recurrenceSeriesId,
     recurrence_frequency: t.recurrence.frequency,
     recurrence_weekdays: t.recurrence.weekdays,
     recurrence_day_of_month: t.recurrence.dayOfMonth,
@@ -232,6 +233,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           startedAt: r["started_at"] ?? null,
           completedAt: r["completed_at"] ?? null,
           dueAt: r["due_at"] ?? null,
+          recurrenceSeriesId: r["recurrence_series_id"] ?? r["id"],
           recurrence: {
             frequency: r["recurrence_frequency"] ?? "none",
             weekdays: (r["recurrence_weekdays"] ?? []) as number[],
@@ -266,18 +268,30 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   );
 
   const addTask = useCallback((input: TaskInput) => {
+    const recurrence = input.recurrence ?? EMPTY_RECURRENCE;
+    const seriesId = newId();
     const task: Task = {
       ...input,
       id: newId(),
       createdAt: new Date().toISOString(),
       completedAt: null,
-      dueAt: input.dueAt ?? nextRecurrenceDate(input.recurrence ?? EMPTY_RECURRENCE),
-      recurrence: input.recurrence ?? EMPTY_RECURRENCE,
+      dueAt: input.dueAt ?? nextRecurrenceDate(recurrence),
+      recurrenceSeriesId: seriesId,
+      recurrence,
       steps: [],
     };
 
-    dispatch({ type: "add", task });
-    mirrorSave(task);
+    const siblingTasks: Task[] = recurrence.frequency === "weekly"
+      ? recurrence.weekdays
+          .map((weekday) => nextWeeklyDate(recurrence.weekdays, new Date(), weekday))
+          .filter((dueAt): dueAt is string => Boolean(dueAt) && dueAt !== task.dueAt)
+          .map((dueAt) => ({ ...task, id: newId(), dueAt }))
+      : [];
+
+    for (const occurrence of [task, ...siblingTasks]) {
+      dispatch({ type: "add", task: occurrence });
+      mirrorSave(occurrence);
+    }
 
     return task.id;
   }, []);
@@ -312,6 +326,36 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         completedAt:
           next === "concluida" ? new Date().toISOString() : null,
       });
+
+      if (next === "concluida" && t.recurrence.frequency !== "none") {
+        const occurrenceDate = new Date(t.dueAt ?? new Date());
+        const dueAt = t.recurrence.frequency === "weekly"
+          ? nextWeeklyDate(t.recurrence.weekdays, occurrenceDate, occurrenceDate.getDay())
+          : nextRecurrenceDate(t.recurrence, occurrenceDate);
+        const alreadyExists = tasks.some(
+          (candidate) => candidate.recurrenceSeriesId === t.recurrenceSeriesId && candidate.dueAt === dueAt,
+        );
+
+        if (dueAt && !alreadyExists) {
+          const nextOccurrence: Task = {
+            ...t,
+            id: newId(),
+            status: "pendente",
+            createdAt: new Date().toISOString(),
+            completedAt: null,
+            startedAt: null,
+            dueAt,
+            steps: t.steps.map((step, position) => ({
+              ...step,
+              id: newId(),
+              done: false,
+              position,
+            })),
+          };
+          dispatch({ type: "add", task: nextOccurrence });
+          mirrorSave(nextOccurrence);
+        }
+      }
     },
     [find]
   );

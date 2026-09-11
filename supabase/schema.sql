@@ -32,6 +32,7 @@ create table if not exists public.tasks (
   started_at timestamptz,
   completed_at timestamptz,
   due_at timestamptz,
+  recurrence_series_id uuid not null,
   recurrence_frequency text not null default 'none' check (recurrence_frequency in ('none', 'weekly', 'monthly')),
   recurrence_weekdays integer[] not null default '{}',
   recurrence_day_of_month integer check (recurrence_day_of_month between 1 and 31)

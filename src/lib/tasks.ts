@@ -31,6 +31,7 @@ export interface Task {
   completedAt: string | null;
   startedAt?: string | null;
   dueAt: string | null;
+  recurrenceSeriesId: string;
   recurrence: TaskRecurrence;
   steps: TaskStep[];
 }
@@ -94,6 +95,19 @@ export function nextRecurrenceDate(recurrence: TaskRecurrence, from = new Date()
     return candidate.toISOString();
   }
 
+  return null;
+}
+
+export function nextWeeklyDate(weekdays: number[], from = new Date(), weekday?: number): string | null {
+  const targetDays = weekday === undefined ? weekdays : [weekday];
+  for (let offset = 1; offset <= 7; offset += 1) {
+    const candidate = new Date(from);
+    candidate.setDate(candidate.getDate() + offset);
+    if (targetDays.includes(candidate.getDay())) {
+      candidate.setHours(9, 0, 0, 0);
+      return candidate.toISOString();
+    }
+  }
   return null;
 }
 
