@@ -34,9 +34,14 @@ export function RewardPanel({ tasks }: RewardPanelProps) {
     <>
       {celebrating && (
         <div className="confetti-stage" aria-hidden="true">
-          {Array.from({ length: 42 }, (_, index) => {
-            const x = ((index * 47) % 100) - 50;
-            const delay = (index % 8) * 0.04;
+          <div className="celebration-message">
+            <Sparkles className="h-5 w-5" />
+            <span>Parabéns!</span>
+            <Sparkles className="h-5 w-5" />
+          </div>
+          {Array.from({ length: 28 }, (_, index) => {
+            const x = ((index * 29) % 70) - 35;
+            const delay = (index % 7) * 0.045;
             const rotation = (index * 37) % 360;
             return (
               <span
