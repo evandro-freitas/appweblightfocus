@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, CheckCircle2, ListTodo, LogOut, Moon, Plus, Sparkles, Sun } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, ListTodo, LogOut, Moon, Plus, Sparkles, Sun } from "lucide-react";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,10 @@ import { decomposeTask } from "@/lib/ai.functions";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { useTasks } from "@/lib/task-store";
-import type { Status, Task, TaskInput } from "@/lib/tasks";
+import { isDueToday, type Status, type Task, type TaskInput } from "@/lib/tasks";
 
 type Filter = "todas" | Status;
+type ViewScope = "today" | "all";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,6 +53,7 @@ function Index() {
     useTasks();
   const decompose = useServerFn(decomposeTask);
   const [filter, setFilter] = useState<Filter>("todas");
+  const [viewScope, setViewScope] = useState<ViewScope>("today");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
@@ -63,11 +65,17 @@ function Index() {
   }, [configured, loading, user, navigate]);
 
   const filteredTasks = useMemo(() => {
-    if (filter === "todas") return tasks;
-    return tasks.filter((t) => t.status === filter);
-  }, [tasks, filter]);
+    const scoped = viewScope === "today" ? tasks.filter((task) => isDueToday(task)) : tasks;
+    if (filter === "todas") return scoped;
+    return scoped.filter((t) => t.status === filter);
+  }, [tasks, filter, viewScope]);
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "concluida"), [tasks]);
+  const todayLabel = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
 
   function handleAdd(input: TaskInput, steps?: string[]) {
     const id = addTask(input);
@@ -154,7 +162,38 @@ function Index() {
         <RecommendationPanel />
 
         <section className="mt-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">Agenda do dia</p>
+            <h2 className="mt-1 font-display text-xl font-semibold capitalize">Hoje, {todayLabel}</h2>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex w-full items-center gap-2 rounded-lg bg-secondary p-1 sm:w-auto">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={viewScope === "today" ? "default" : "ghost"}
+                  onClick={() => setViewScope("today")}
+                  className="flex-1 gap-1.5 sm:flex-none"
+                >
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  Hoje
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={viewScope === "all" ? "default" : "ghost"}
+                  onClick={() => setViewScope("all")}
+                  className="flex-1 gap-1.5 sm:flex-none"
+                >
+                  <ListTodo className="h-3.5 w-3.5" />
+                  Todas
+                </Button>
+              </div>
+
+              <TaskForm onSubmit={handleAdd} />
+            </div>
+
             <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)} className="w-full sm:w-auto">
               <TabsList className="grid h-10 w-full grid-cols-4 sm:w-auto sm:grid-cols-4">
                 <TabsTrigger value="todas" className="gap-1.5 text-xs">
@@ -176,7 +215,6 @@ function Index() {
               </TabsList>
             </Tabs>
 
-            <TaskForm onSubmit={handleAdd} />
           </div>
 
           <div className="mt-6 space-y-3">

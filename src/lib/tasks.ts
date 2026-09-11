@@ -73,6 +73,14 @@ export function recurrenceLabel(recurrence: TaskRecurrence): string | null {
   return null;
 }
 
+export function isDueToday(task: Pick<Task, "dueAt">, date = new Date()): boolean {
+  if (!task.dueAt) return true;
+  const due = new Date(task.dueAt);
+  return due.getFullYear() === date.getFullYear()
+    && due.getMonth() === date.getMonth()
+    && due.getDate() === date.getDate();
+}
+
 export function nextRecurrenceDate(recurrence: TaskRecurrence, from = new Date()): string | null {
   if (recurrence.frequency === "weekly") {
     for (let offset = 0; offset <= 7; offset += 1) {
