@@ -28,6 +28,7 @@ export function RewardPanel({ tasks }: RewardPanelProps) {
       return () => window.clearTimeout(timeout);
     }
     previousCompleted.current = completed;
+    return undefined;
   }, [completed]);
 
   return (
