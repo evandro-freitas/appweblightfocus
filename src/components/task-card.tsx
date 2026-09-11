@@ -30,6 +30,7 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
   onToggleStep: (taskId: string, stepId: string) => void;
   onDecompose: (task: Task) => Promise<void> | void;
+  onFocus: (task: Task) => void;
 }
 
 const priorityClasses = {
@@ -46,6 +47,7 @@ export function TaskCard({
   onEdit,
   onToggleStep,
   onDecompose,
+  onFocus,
 }: TaskCardProps) {
   const [expanded, setExpanded] = useState(task.status === "em_andamento");
   const [isDecomposing, setIsDecomposing] = useState(false);
@@ -190,6 +192,12 @@ export function TaskCard({
                 <Button size="sm" onClick={() => onStart(task.id)} className="h-8 gap-1.5">
                   <Play className="h-3.5 w-3.5" />
                   Começar
+                </Button>
+              )}
+              {task.status !== "concluida" && (
+                <Button size="sm" variant="outline" onClick={() => onFocus(task)} className="h-8 gap-1.5">
+                  <Play className="h-3.5 w-3.5" />
+                  Foco
                 </Button>
               )}
               {task.status === "em_andamento" && (

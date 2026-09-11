@@ -13,6 +13,7 @@ import { TaskStats } from "@/components/task-stats";
 import { CheckInDialog } from "@/components/checkin-dialog";
 import { RecommendationPanel } from "@/components/recommendation-panel";
 import { RemindersDialog } from "@/components/reminders-dialog";
+import { FocusMode } from "@/components/focus-mode";
 import { decomposeTask } from "@/lib/ai.functions";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -50,6 +51,7 @@ function Index() {
   const decompose = useServerFn(decomposeTask);
   const [filter, setFilter] = useState<Filter>("todas");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { user, loading, configured, signOut } = useAuth();
   const navigate = useNavigate();
@@ -89,6 +91,12 @@ function Index() {
   }
 
   const editingTask = editingId ? tasks.find((t) => t.id === editingId) ?? null : null;
+  const focusTask = focusTaskId ? tasks.find((t) => t.id === focusTaskId) ?? null : null;
+
+  function handleFocus(task: Task) {
+    if (task.status === "pendente") startTask(task.id);
+    setFocusTaskId(task.id);
+  }
 
   if (configured && (loading || !user)) {
     return (
@@ -209,6 +217,7 @@ function Index() {
                     onEdit={() => setEditingId(task.id)}
                     onToggleStep={toggleStep}
                     onDecompose={handleDecompose}
+                    onFocus={handleFocus}
                   />
                 ),
               )
@@ -223,6 +232,14 @@ function Index() {
           </p>
         )}
       </div>
+      <FocusMode
+        task={focusTask}
+        onClose={() => setFocusTaskId(null)}
+        onComplete={(id) => {
+          toggleComplete(id);
+          setFocusTaskId(null);
+        }}
+      />
     </div>
   );
 }
