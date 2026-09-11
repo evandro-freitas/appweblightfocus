@@ -327,35 +327,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
           next === "concluida" ? new Date().toISOString() : null,
       });
 
-      if (next === "concluida" && t.recurrence.frequency !== "none") {
-        const occurrenceDate = new Date(t.dueAt ?? new Date());
-        const dueAt = t.recurrence.frequency === "weekly"
-          ? nextWeeklyDate(t.recurrence.weekdays, occurrenceDate, occurrenceDate.getDay())
-          : nextRecurrenceDate(t.recurrence, occurrenceDate);
-        const alreadyExists = tasks.some(
-          (candidate) => candidate.recurrenceSeriesId === t.recurrenceSeriesId && candidate.dueAt === dueAt,
-        );
-
-        if (dueAt && !alreadyExists) {
-          const nextOccurrence: Task = {
-            ...t,
-            id: newId(),
-            status: "pendente",
-            createdAt: new Date().toISOString(),
-            completedAt: null,
-            startedAt: null,
-            dueAt,
-            steps: t.steps.map((step, position) => ({
-              ...step,
-              id: newId(),
-              done: false,
-              position,
-            })),
-          };
-          dispatch({ type: "add", task: nextOccurrence });
-          mirrorSave(nextOccurrence);
-        }
-      }
     },
     [find]
   );
