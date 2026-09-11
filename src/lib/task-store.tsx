@@ -312,27 +312,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         completedAt:
           next === "concluida" ? new Date().toISOString() : null,
       });
-
-      if (next === "concluida" && t.recurrence.frequency !== "none") {
-        const recurringTask: Task = {
-          ...t,
-          id: newId(),
-          status: "pendente",
-          createdAt: new Date().toISOString(),
-          completedAt: null,
-          startedAt: null,
-          dueAt: nextRecurrenceDate(t.recurrence),
-          steps: t.steps.map((step, position) => ({
-            ...step,
-            id: newId(),
-            done: false,
-            position,
-          })),
-        };
-        dispatch({ type: "add", task: recurringTask });
-        mirrorSave(recurringTask);
-        toast.success("Próxima ocorrência criada. Sua rotina continua no lugar.");
-      }
     },
     [find]
   );
