@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the assistant as a single in-memory conversation with a server streaming route; this avoids storing private chat history and preserves the user's temporary-chat choice.
