@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, CalendarDays, CheckCircle2, ListTodo, LogOut, Moon, Plus, Sparkles, Sun } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, ListTodo, LogOut, MessageCircle, Moon, Plus, Sparkles, Sun } from "lucide-react";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { RemindersDialog } from "@/components/reminders-dialog";
 import { FocusMode } from "@/components/focus-mode";
 import { RewardPanel } from "@/components/reward-panel";
 import { TaskAlerts } from "@/components/task-alerts";
+import { AssistantDialog } from "@/components/assistant-dialog";
 import { decomposeTask } from "@/lib/ai.functions";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -56,6 +57,8 @@ function Index() {
   const [viewScope, setViewScope] = useState<ViewScope>("today");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatTask, setChatTask] = useState<Task | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { user, loading, configured, signOut } = useAuth();
   const navigate = useNavigate();
@@ -76,6 +79,8 @@ function Index() {
     day: "numeric",
     month: "long",
   }).format(new Date());
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
   function handleAdd(input: TaskInput, steps?: string[]) {
     const id = addTask(input);
@@ -154,12 +159,20 @@ function Index() {
           </div>
         </header>
 
+        <section className="mb-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Seu espaço de foco</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">{greeting}, vamos com calma.</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Você não precisa fazer tudo. Escolha o próximo passo.</p>
+          <Button className="mt-4 gap-2" variant="outline" onClick={() => { setChatTask(null); setChatOpen(true); }}><MessageCircle className="size-4" /> Conversar com LightFocus</Button>
+        </section>
+
         <TaskStats tasks={tasks} />
 
-        <RewardPanel tasks={tasks} />
+        <div className="mt-4 grid items-stretch gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <div><RewardPanel tasks={tasks} compact /></div>
+          <div><RecommendationPanel compact /></div>
+        </div>
         <TaskAlerts />
-
-        <RecommendationPanel />
 
         <section className="mt-8">
           <div className="mb-4">
@@ -267,6 +280,7 @@ function Index() {
                     onToggleStep={toggleStep}
                     onDecompose={handleDecompose}
                     onFocus={handleFocus}
+                    onChat={(selected) => { setChatTask(selected); setChatOpen(true); }}
                   />
                 ),
               )
@@ -289,6 +303,7 @@ function Index() {
           setFocusTaskId(null);
         }}
       />
+      <AssistantDialog open={chatOpen} onOpenChange={setChatOpen} task={chatTask} tasks={tasks} />
     </div>
   );
 }

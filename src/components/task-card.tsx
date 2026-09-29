@@ -4,6 +4,7 @@ import {
   Circle,
   Clock,
   MoreHorizontal,
+  MessageCircle,
   Play,
   Repeat,
   Sparkles,
@@ -32,6 +33,7 @@ interface TaskCardProps {
   onToggleStep: (taskId: string, stepId: string) => void;
   onDecompose: (task: Task, mode: "replace" | "continue") => Promise<void> | void;
   onFocus: (task: Task) => void;
+  onChat: (task: Task) => void;
 }
 
 const priorityClasses = {
@@ -49,6 +51,7 @@ export function TaskCard({
   onToggleStep,
   onDecompose,
   onFocus,
+  onChat,
 }: TaskCardProps) {
   const [expanded, setExpanded] = useState(task.status === "em_andamento");
   const [isDecomposing, setIsDecomposing] = useState(false);
@@ -189,6 +192,9 @@ export function TaskCard({
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button type="button" size="sm" variant="outline" className="h-auto min-h-8 whitespace-normal text-left" onClick={() => onChat(task)}>
+                <MessageCircle className="size-3.5" /> Conversar sobre esta tarefa
+              </Button>
               {task.status !== "concluida" && (
                 <Button
                   size="sm"
