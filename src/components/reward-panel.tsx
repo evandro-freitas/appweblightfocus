@@ -7,9 +7,10 @@ import type { Task } from "@/lib/tasks";
 
 interface RewardPanelProps {
   tasks: Task[];
+  compact?: boolean;
 }
 
-export function RewardPanel({ tasks }: RewardPanelProps) {
+export function RewardPanel({ tasks, compact = false }: RewardPanelProps) {
   const completed = tasks.filter((task) => task.status === "concluida").length;
   const points = completed * 10;
   const milestone = Math.max(50, (Math.floor(points / 50) + 1) * 50);
@@ -58,8 +59,8 @@ export function RewardPanel({ tasks }: RewardPanelProps) {
           })}
         </div>
       )}
-      <Card className="relative mt-4 overflow-hidden border-accent/40 bg-accent/10">
-        <CardContent className="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <Card className={`relative overflow-hidden border-accent/40 bg-accent/10 ${compact ? "h-full" : "mt-4"}`}>
+        <CardContent className={`relative flex flex-col gap-4 p-4 ${compact ? "h-full justify-between" : "sm:flex-row sm:items-center sm:justify-between"}`}>
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-accent p-2.5 text-accent-foreground">
               <Trophy className="h-5 w-5" />

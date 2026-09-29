@@ -168,9 +168,9 @@ function Index() {
 
         <TaskStats tasks={tasks} />
 
-        <div className="grid items-stretch gap-4 md:grid-cols-2 [&>*]:min-w-0 [&>*>.relative]:h-full [&>*>.relative]:mt-0">
-          <div><RewardPanel tasks={tasks} /></div>
-          <div><RecommendationPanel /></div>
+        <div className="mt-4 grid items-stretch gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <div><RewardPanel tasks={tasks} compact /></div>
+          <div><RecommendationPanel compact /></div>
         </div>
         <TaskAlerts />
 

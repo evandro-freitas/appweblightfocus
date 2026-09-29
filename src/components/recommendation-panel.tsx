@@ -18,7 +18,7 @@ interface StoredRec {
   rec: Recommendation | null;
 }
 
-export function RecommendationPanel() {
+export function RecommendationPanel({ compact = false }: { compact?: boolean }) {
   const { checkIn, checkedInAt, isToday } = useCheckIn();
   const { tasks, startTask } = useTasks();
   const recommend = useServerFn(recommendTask);
@@ -79,7 +79,7 @@ export function RecommendationPanel() {
 
   if (!checkIn) {
     return (
-      <Card className="mt-6 border-dashed border-primary/40 bg-primary/5">
+      <Card className={`${compact ? "h-full" : "mt-6"} border-dashed border-primary/40 bg-primary/5`}>
         <CardContent className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-display text-lg font-semibold">Como você está agora?</h2>
@@ -104,7 +104,7 @@ export function RecommendationPanel() {
   const task: Task | undefined = rec ? tasks.find((t) => t.id === rec.taskId) : undefined;
 
   return (
-    <Card className="mt-6 border-primary/30 bg-primary/5">
+    <Card className={`${compact ? "h-full" : "mt-6"} border-primary/30 bg-primary/5`}>
       <CardContent className="p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
