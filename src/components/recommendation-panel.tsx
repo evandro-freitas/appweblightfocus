@@ -47,7 +47,10 @@ export function RecommendationPanel({ compact = false }: { compact?: boolean }) 
       });
       setRec(result);
       try {
-        localStorage.setItem(REC_KEY, JSON.stringify({ signature, rec: result } satisfies StoredRec));
+        localStorage.setItem(
+          REC_KEY,
+          JSON.stringify({ signature, rec: result } satisfies StoredRec),
+        );
       } catch {
         /* localStorage indisponível */
       }
@@ -76,10 +79,11 @@ export function RecommendationPanel({ compact = false }: { compact?: boolean }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature]);
 
-
   if (!checkIn) {
     return (
-      <Card className={`${compact ? "h-full" : "mt-6"} border-dashed border-primary/40 bg-primary/5`}>
+      <Card
+        className={`${compact ? "h-full" : "mt-6"} border-dashed border-primary/40 bg-primary/5`}
+      >
         <CardContent className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-display text-lg font-semibold">Como você está agora?</h2>

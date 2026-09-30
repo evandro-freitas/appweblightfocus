@@ -159,7 +159,8 @@ export function TaskCard({
                 )}
                 {task.dueAt && (
                   <span className="text-muted-foreground">
-                    {task.recurrence.frequency === "none" ? "Começa" : "Próxima"}: {new Date(task.dueAt).toLocaleString("pt-BR", {
+                    {task.recurrence.frequency === "none" ? "Começa" : "Próxima"}:{" "}
+                    {new Date(task.dueAt).toLocaleString("pt-BR", {
                       day: "2-digit",
                       month: "short",
                       hour: "2-digit",
@@ -192,7 +193,13 @@ export function TaskCard({
             )}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button type="button" size="sm" variant="outline" className="h-auto min-h-8 whitespace-normal text-left" onClick={() => onChat(task)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-auto min-h-8 whitespace-normal text-left"
+                onClick={() => onChat(task)}
+              >
                 <MessageCircle className="size-3.5" /> Conversar sobre esta tarefa
               </Button>
               {task.status !== "concluida" && (
@@ -230,7 +237,12 @@ export function TaskCard({
                 </Button>
               )}
               {task.status !== "concluida" && (
-                <Button size="sm" variant="outline" onClick={() => onFocus(task)} className="h-8 gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onFocus(task)}
+                  className="h-8 gap-1.5"
+                >
                   <Play className="h-3.5 w-3.5" />
                   Foco
                 </Button>
