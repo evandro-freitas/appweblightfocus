@@ -49,18 +49,24 @@ export function RewardPanel({ tasks, compact = false }: RewardPanelProps) {
               <span
                 key={index}
                 className={`confetti confetti-${(index % 6) + 1}`}
-                style={{
-                  "--confetti-x": `${x}vw`,
-                  "--confetti-delay": `${delay}s`,
-                  "--confetti-rotation": `${rotation}deg`,
-                } as CSSProperties}
+                style={
+                  {
+                    "--confetti-x": `${x}vw`,
+                    "--confetti-delay": `${delay}s`,
+                    "--confetti-rotation": `${rotation}deg`,
+                  } as CSSProperties
+                }
               />
             );
           })}
         </div>
       )}
-      <Card className={`relative overflow-hidden border-accent/40 bg-accent/10 ${compact ? "h-full" : "mt-4"}`}>
-        <CardContent className={`relative flex flex-col gap-4 p-4 ${compact ? "h-full justify-between" : "sm:flex-row sm:items-center sm:justify-between"}`}>
+      <Card
+        className={`relative overflow-hidden border-accent/40 bg-accent/10 ${compact ? "h-full" : "mt-4"}`}
+      >
+        <CardContent
+          className={`relative flex flex-col gap-4 p-4 ${compact ? "h-full justify-between" : "sm:flex-row sm:items-center sm:justify-between"}`}
+        >
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-accent p-2.5 text-accent-foreground">
               <Trophy className="h-5 w-5" />
@@ -84,7 +90,10 @@ export function RewardPanel({ tasks, compact = false }: RewardPanelProps) {
               <span className="text-muted-foreground">próximo marco: {milestone}</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-background/70">
-              <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${progress}%` }} />
+              <div
+                className="h-full rounded-full bg-accent transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
         </CardContent>

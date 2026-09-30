@@ -1,7 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, CalendarDays, CheckCircle2, ListTodo, LogOut, MessageCircle, Moon, Plus, Sparkles, Sun } from "lucide-react";
+import {
+  Brain,
+  CalendarDays,
+  CheckCircle2,
+  ListTodo,
+  LogOut,
+  MessageCircle,
+  Moon,
+  Plus,
+  Sparkles,
+  Sun,
+} from "lucide-react";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -32,14 +43,12 @@ export const Route = createFileRoute("/")({
       { title: "LightFocus — Tarefas para quem tem TDAH" },
       {
         name: "description",
-        content:
-          "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
+        content: "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
       },
       { property: "og:title", content: "LightFocus — Tarefas para quem tem TDAH" },
       {
         property: "og:description",
-        content:
-          "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
+        content: "Veja suas tarefas, filtre por status e adicione novas atividades no LightFocus.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,8 +59,17 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { tasks, addTask, updateTask, deleteTask, toggleComplete, startTask, toggleStep, setSteps, appendSteps } =
-    useTasks();
+  const {
+    tasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    toggleComplete,
+    startTask,
+    toggleStep,
+    setSteps,
+    appendSteps,
+  } = useTasks();
   const decompose = useServerFn(decomposeTask);
   const [filter, setFilter] = useState<Filter>("todas");
   const [viewScope, setViewScope] = useState<ViewScope>("today");
@@ -111,8 +129,8 @@ function Index() {
     }
   }
 
-  const editingTask = editingId ? tasks.find((t) => t.id === editingId) ?? null : null;
-  const focusTask = focusTaskId ? tasks.find((t) => t.id === focusTaskId) ?? null : null;
+  const editingTask = editingId ? (tasks.find((t) => t.id === editingId) ?? null) : null;
+  const focusTask = focusTaskId ? (tasks.find((t) => t.id === focusTaskId) ?? null) : null;
 
   function handleFocus(task: Task) {
     if (task.status === "pendente") startTask(task.id);
@@ -160,24 +178,47 @@ function Index() {
         </header>
 
         <section className="mb-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Seu espaço de foco</p>
-          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">{greeting}, vamos com calma.</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Você não precisa fazer tudo. Escolha o próximo passo.</p>
-          <Button className="mt-4 gap-2" variant="outline" onClick={() => { setChatTask(null); setChatOpen(true); }}><MessageCircle className="size-4" /> Conversar com LightFocus</Button>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            Seu espaço de foco
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">
+            {greeting}, vamos com calma.
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Você não precisa fazer tudo. Escolha o próximo passo.
+          </p>
+          <Button
+            className="mt-4 gap-2"
+            variant="outline"
+            onClick={() => {
+              setChatTask(null);
+              setChatOpen(true);
+            }}
+          >
+            <MessageCircle className="size-4" /> Conversar com LightFocus
+          </Button>
         </section>
 
         <TaskStats tasks={tasks} />
 
         <div className="mt-4 grid items-stretch gap-4 md:grid-cols-2 [&>*]:min-w-0">
-          <div><RewardPanel tasks={tasks} compact /></div>
-          <div><RecommendationPanel compact /></div>
+          <div>
+            <RewardPanel tasks={tasks} compact />
+          </div>
+          <div>
+            <RecommendationPanel compact />
+          </div>
         </div>
         <TaskAlerts />
 
         <section className="mt-8">
           <div className="mb-4">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">Agenda do dia</p>
-            <h2 className="mt-1 font-display text-xl font-semibold capitalize">Hoje, {todayLabel}</h2>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+              Agenda do dia
+            </p>
+            <h2 className="mt-1 font-display text-xl font-semibold capitalize">
+              Hoje, {todayLabel}
+            </h2>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -207,7 +248,11 @@ function Index() {
               <TaskForm onSubmit={handleAdd} />
             </div>
 
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)} className="w-full sm:w-auto">
+            <Tabs
+              value={filter}
+              onValueChange={(v) => setFilter(v as Filter)}
+              className="w-full sm:w-auto"
+            >
               <TabsList className="grid h-10 w-full grid-cols-4 sm:w-auto sm:grid-cols-4">
                 <TabsTrigger value="todas" className="gap-1.5 text-xs">
                   <ListTodo className="h-3.5 w-3.5" />
@@ -227,7 +272,6 @@ function Index() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
           </div>
 
           <div className="mt-6 space-y-3">
@@ -238,9 +282,7 @@ function Index() {
                     <ListTodo className="h-6 w-6" />
                   </div>
                   <h3 className="mt-4 font-display text-lg font-semibold">
-                    {filter === "todas"
-                      ? "Nenhuma tarefa por aqui"
-                      : "Nenhuma tarefa neste status"}
+                    {filter === "todas" ? "Nenhuma tarefa por aqui" : "Nenhuma tarefa neste status"}
                   </h3>
                   <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                     {filter === "todas"
@@ -280,7 +322,10 @@ function Index() {
                     onToggleStep={toggleStep}
                     onDecompose={handleDecompose}
                     onFocus={handleFocus}
-                    onChat={(selected) => { setChatTask(selected); setChatOpen(true); }}
+                    onChat={(selected) => {
+                      setChatTask(selected);
+                      setChatOpen(true);
+                    }}
                   />
                 ),
               )
@@ -290,8 +335,8 @@ function Index() {
 
         {openTasks.length > 0 && (
           <p className="mt-8 text-center text-xs text-muted-foreground">
-            {openTasks.length} {openTasks.length === 1 ? "tarefa aberta" : "tarefas abertas"}.
-            Foque na próxima.
+            {openTasks.length} {openTasks.length === 1 ? "tarefa aberta" : "tarefas abertas"}. Foque
+            na próxima.
           </p>
         )}
       </div>

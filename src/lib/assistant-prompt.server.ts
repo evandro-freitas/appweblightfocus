@@ -1,4 +1,7 @@
-export function assistantPrompt(task: { title: string; estimatedMinutes: number; energy: string } | null, openTasks: { title: string; estimatedMinutes: number; energy: string }[]) {
+export function assistantPrompt(
+  task: { title: string; estimatedMinutes: number; energy: string } | null,
+  openTasks: { title: string; estimatedMinutes: number; energy: string }[],
+) {
   const active = task ?? openTasks[0] ?? null;
   return `Você é o assistente de foco do LightFocus, para pessoas com TDAH. Fale em português brasileiro, com acolhimento, clareza e respostas breves. A digitação livre está sempre disponível. Ajude com decisões pequenas e concretas, sem julgamento.
 Tarefa ativa: ${active ? JSON.stringify(active) : "nenhuma tarefa ativa"}.
