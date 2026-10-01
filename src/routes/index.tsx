@@ -77,6 +77,7 @@ function Index() {
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatTask, setChatTask] = useState<Task | null>(null);
+  const [chatSession, setChatSession] = useState(0);
   const { theme, toggleTheme } = useTheme();
   const { user, loading, configured, signOut } = useAuth();
   const navigate = useNavigate();
@@ -324,6 +325,7 @@ function Index() {
                     onFocus={handleFocus}
                     onChat={(selected) => {
                       setChatTask(selected);
+                      setChatSession((n) => n + 1);
                       setChatOpen(true);
                     }}
                   />
@@ -348,7 +350,13 @@ function Index() {
           setFocusTaskId(null);
         }}
       />
-      <AssistantDialog open={chatOpen} onOpenChange={setChatOpen} task={chatTask} tasks={tasks} />
+      <AssistantDialog
+        key={chatTask ? `task-${chatTask.id}-${chatSession}` : "global"}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        task={chatTask}
+        tasks={tasks}
+      />
     </div>
   );
 }
