@@ -1,5 +1,8 @@
 type BasicTask = { title: string; estimatedMinutes: number; energy: string };
-type ActiveTask = BasicTask & { completedSteps?: string[]; pendingSteps?: string[] };
+type ActiveTask = BasicTask & {
+  completedSteps?: string[] | undefined;
+  pendingSteps?: string[] | undefined;
+};
 
 export function assistantPrompt(task: ActiveTask | null, openTasks: BasicTask[]) {
   const base = `Você é o assistente de foco do LightFocus, para pessoas com TDAH. Fale em português brasileiro, com acolhimento, clareza e respostas breves. A digitação livre está sempre disponível. Ajude com decisões pequenas e concretas, sem julgamento.`;
