@@ -27,6 +27,25 @@ const globalPrompts = [
 ];
 type TaskContext = Pick<Task, "id" | "title" | "estimatedMinutes" | "energy" | "steps">;
 
+const CHIP_MARKER = "[[CHIPS]]";
+
+/** Separa o texto visível dos chips de continuidade enviados pela IA no fim da resposta. */
+function splitChips(text: string): { body: string; chips: string[] } {
+  const at = text.indexOf(CHIP_MARKER);
+  if (at === -1) {
+    // Esconde um marcador parcial enquanto ele ainda está chegando no streaming.
+    const partial = text.lastIndexOf("[[");
+    return { body: partial > -1 && text.length - partial < 10 ? text.slice(0, partial) : text, chips: [] };
+  }
+  const chips = text
+    .slice(at + CHIP_MARKER.length)
+    .split("\n")
+    .map((l) => l.replace(/^\s*[-*•\d.)]+\s*/, "").trim())
+    .filter((l) => l.length > 0 && l.length <= 120)
+    .slice(0, 3);
+  return { body: text.slice(0, at).trimEnd(), chips };
+}
+
 function taskPrompts(task: TaskContext) {
   return [
     "✨ Qual o primeiro micro-passo de 2 minutos?",
@@ -142,23 +161,42 @@ export function AssistantDialog({
                 </div>
               </div>
             )}
-            {messages.map((message) => (
-              <Message key={message.id} from={message.role}>
-                <MessageContent
-                  className={message.role === "user" ? "bg-primary text-primary-foreground" : ""}
-                >
-                  {message.parts.map((part, i) =>
-                    part.type === "text" ? (
-                      <MessageResponse key={i}>{part.text}</MessageResponse>
-                    ) : part.type === "reasoning" ? null : (
-                      <span key={i} className="text-xs text-muted-foreground">
-                        {part.type.startsWith("tool-") ? "Consultando…" : ""}
-                      </span>
-                    ),
+            {messages.map((message, idx) => {
+              const isLast = idx === messages.length - 1;
+              const fullText = message.parts
+                .map((p) => (p.type === "text" ? p.text : ""))
+                .join("");
+              const { body, chips } =
+                message.role === "assistant" ? splitChips(fullText) : { body: fullText, chips: [] };
+              return (
+                <Message key={message.id} from={message.role}>
+                  <MessageContent
+                    className={message.role === "user" ? "bg-primary text-primary-foreground" : ""}
+                  >
+                    {body && <MessageResponse>{body}</MessageResponse>}
+                    {message.parts.some((p) => p.type.startsWith("tool-")) && (
+                      <span className="text-xs text-muted-foreground">Consultando…</span>
+                    )}
+                  </MessageContent>
+                  {message.role === "assistant" && isLast && !busy && chips.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {chips.map((chip) => (
+                        <Button
+                          type="button"
+                          key={chip}
+                          variant="outline"
+                          size="sm"
+                          className="h-auto whitespace-normal text-left"
+                          onClick={() => send(chip)}
+                        >
+                          {chip}
+                        </Button>
+                      ))}
+                    </div>
                   )}
-                </MessageContent>
-              </Message>
-            ))}
+                </Message>
+              );
+            })}
             {status === "submitted" && (
               <p role="status" className="text-sm text-muted-foreground">
                 Pensando no próximo passo…
