@@ -14,6 +14,10 @@ const taskSchema = z.object({
   estimatedMinutes: z.number(),
   energy: z.string().max(30),
 });
+const activeTaskSchema = taskSchema.extend({
+  completedSteps: z.array(z.string().max(300)).max(50).optional(),
+  pendingSteps: z.array(z.string().max(300)).max(50).optional(),
+});
 const requestSchema = z.object({
   messages: z
     .array(
@@ -26,7 +30,7 @@ const requestSchema = z.object({
         .passthrough(),
     )
     .max(100),
-  task: taskSchema.nullable(),
+  task: activeTaskSchema.nullable(),
   openTasks: z.array(taskSchema).max(30),
 });
 
