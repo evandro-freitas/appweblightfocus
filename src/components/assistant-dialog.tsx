@@ -20,12 +20,21 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import type { Task } from "@/lib/tasks";
 
-const prompts = [
+const globalPrompts = [
   "🚨 O que fazer agora?",
   "✨ Desconstruir tarefa atual",
   "⚡ Descarregar ideia rápida",
 ];
-type TaskContext = Pick<Task, "title" | "estimatedMinutes" | "energy">;
+type TaskContext = Pick<Task, "id" | "title" | "estimatedMinutes" | "energy" | "steps">;
+
+function taskPrompts(task: TaskContext) {
+  return [
+    "✨ Qual o primeiro micro-passo de 2 minutos?",
+    `⏱️ Como dividir esses ${task.estimatedMinutes} minutos em etapas sem me cansar?`,
+    "🛡️ O que fazer se eu sentir resistência para começar?",
+    "🧩 Desconstruir os passos desta tarefa",
+  ];
+}
 
 export function AssistantDialog({
   open,
@@ -40,22 +49,43 @@ export function AssistantDialog({
 }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const prompts = task ? taskPrompts(task) : globalPrompts;
+  const taskPayload = useMemo(
+    () =>
+      task
+        ? {
+            title: task.title,
+            estimatedMinutes: task.estimatedMinutes,
+            energy: task.energy,
+            completedSteps: task.steps.filter((s) => s.done).map((s) => s.title),
+            pendingSteps: task.steps.filter((s) => !s.done).map((s) => s.title),
+          }
+        : null,
+    [task],
+  );
   const openTasks = useMemo(
     () =>
-      tasks
-        .filter((t) => t.status !== "concluida")
-        .map((t) => ({ title: t.title, estimatedMinutes: t.estimatedMinutes, energy: t.energy })),
-    [tasks],
+      task
+        ? []
+        : tasks
+            .filter((t) => t.status !== "concluida")
+            .map((t) => ({
+              title: t.title,
+              estimatedMinutes: t.estimatedMinutes,
+              energy: t.energy,
+            })),
+    [tasks, task],
   );
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: { task, openTasks },
+        body: { task: taskPayload, openTasks },
       }),
-    [task, openTasks],
+    [taskPayload, openTasks],
   );
   const { messages, sendMessage, status, stop, error } = useChat({
+    id: task ? `task-${task.id}` : "global",
     transport,
     onError: (err) => toast.error(err.message || "Não foi possível responder agora."),
   });
